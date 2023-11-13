@@ -2,6 +2,7 @@
   "name": "fil-deal-ingester",
   "private": true,
   "version": "0.0.1",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/filecoin-station/fil-deal-ingester.git"
