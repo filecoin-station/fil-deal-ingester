@@ -1,0 +1,19 @@
+{
+  "name": "fil-deal-ingester",
+  "private": true,
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/filecoin-station/fil-deal-ingester.git"
+  },
+  "author": "Protocol Labs",
+  "license": "(Apache-2.0 AND MIT)",
+  "bugs": {
+    "url": "https://github.com/filecoin-station/fil-deal-ingester/issues"
+  },
+  "homepage": "https://github.com/filecoin-station/fil-deal-ingester#readme",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
