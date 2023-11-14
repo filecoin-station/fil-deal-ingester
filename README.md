@@ -20,16 +20,51 @@ node scripts/fetch-ldn-clients.js
 
 The output is committed to git, see [./generated/ldn-clients.csv](./generated/ldn-clients.csv)
 
-### Parse storage deals from StateMarketDetals.json
+### Download StateMarketDetails.json and convert it to ND-JSON format
 
 1. Download the snapshot of StateMarketDeals from Glif: https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst
 
+   WARNING: The file has more than 3 GB.
+
 2. Decompress the file and save it to project's root dir as `StateMarketDeals.json`
+
+   WARNING: The decompressed file has over 23 GB
 
 3. Run
 
    ```sh
-   node scripts/parse-market-deals.js
+   jq --stream -c 'fromstream(1|truncate_stream(inputs))' StateMarketDeals.json > generated/StateMarketDeals.ndjson
    ```
 
-The output is NOT committed to git, you can find it in `./generated/deals.json`
+   WARNING: This will take very long.
+
+The output is NOT committed to git, you can find it in `./generated/StateMarketDeals.ndjson`
+
+You can create a smaller file by aborting the `jq` command by pressing Ctrl+C and/or truncating the
+output file at any line boundary.
+
+### Parse FIL+ LDN deals
+
+1. Run the previous step to build `./generated/StateMarketDeals.ndjsonn`
+
+
+2. Run
+
+   ```sh
+   node scripts/parse-deals.js
+   ```
+
+The output is NOT committed to git, you can find it in `./generated/ldn-deals.ndjson`
+
+
+### Build retrieval tasks
+
+1. Run the previous step to build `./generated/ldn-deals.ndjson`
+
+2. Run
+
+   ```sh
+   node scripts/build-retrieval-tasks.js
+   ```
+
+The output is NOT committed to git, you can find it in `./generated/retrieval-tasks.ndjson`

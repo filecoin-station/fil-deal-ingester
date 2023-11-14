@@ -130,4 +130,6 @@ dist
 .pnp.*
 
 StateMarketDeals.json
-generated/deals.json
+generated/ldn-deals.ndjson
+generated/retrieval-tasks.ndjson
+generated/StateMarketDeals.ndjson
