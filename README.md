@@ -20,7 +20,7 @@ node scripts/fetch-ldn-clients.js
 
 The output is committed to git, see [./generated/ldn-clients.csv](./generated/ldn-clients.csv)
 
-### Parse storage deals from StateMarketDetails.json
+### Download StateMarketDetails.json and convert it to ND-JSON format
 
 1. Download the snapshot of StateMarketDeals from Glif: https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst
 
@@ -33,34 +33,33 @@ The output is committed to git, see [./generated/ldn-clients.csv](./generated/ld
 3. Run
 
    ```sh
-   node scripts/parse-market-deals.js
+   jq --stream -c 'fromstream(1|truncate_stream(inputs))' StateMarketDeals.json > generated/StateMarketDeals.ndjson
    ```
 
    WARNING: This will take very long.
 
-The output is NOT committed to git, you can find it in `./generated/deals.json`
+The output is NOT committed to git, you can find it in `./generated/StateMarketDeals.ndjson`
 
-You can create a subset of StateMarketsDeal.json by copying a byte range and then manually editing
-the new file to turn it into a well-formed JSON.
+You can create a smaller file by aborting the `jq` command by pressing Ctrl+C and/or truncating the
+output file at any line boundary.
 
-```
-dd if=StateMarketDeals.json of=StateMarketDeals.partial.json count=10240 skip=20971520
-```
+### Parse FIL+ LDN deals
 
-The default block size is 1024 bytes:
-- `count=10240` will copy 10240*1024 = ~10MB of data
-- `skip=20971520` will start at the offset ~20GB.
+1. Run the previous step to build `./generated/StateMarketDeals.ndjsonn`
 
-In the partial file:
- 1. Delete text from the beginning of the file until the first `}}`
- 2. Change `}}` to `{` (open the top-level object)
- 3. Find the last `}}` in the file
- 4. Delete everything after this `}}` block
- 5. Append `}` (close the top-level object)
+
+2. Run
+
+   ```sh
+   node scripts/parse-deals.js
+   ```
+
+The output is NOT committed to git, you can find it in `./generated/ldn-deals.ndjson`
+
 
 ### Build retrieval tasks
 
-1. Run the previous step to build `./generated/deals.json`
+1. Run the previous step to build `./generated/ldn-deals.ndjson`
 
 2. Run
 
@@ -68,4 +67,4 @@ In the partial file:
    node scripts/build-retrieval-tasks.js
    ```
 
-The output is NOT committed to git, you can find it in `./generated/retrieval-tasks.json`
+The output is NOT committed to git, you can find it in `./generated/retrieval-tasks.ndjson`
