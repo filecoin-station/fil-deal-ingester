@@ -8,8 +8,9 @@ import { once } from 'node:events'
 
 const ldnClients = await loadLdnClients()
 
-const outfile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/deals.ndjson')
-const outstream = createWriteStream(outfile, 'utf-8')
+const outfile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/deals.json')
+const outstream = JSONStream.stringify('[\n  ', ',\n  ', '\n]\n')
+outstream.pipe(createWriteStream(outfile, 'utf-8'))
 
 const infile = resolve(dirname(fileURLToPath(import.meta.url)), '../StateMarketDeals.json')
 await pipeline(
@@ -18,13 +19,12 @@ await pipeline(
   async function * (source, { signal }) {
     for await (const deal of source) {
       signal.throwIfAborted()
-      parseDeal(deal)
+      await processDeal(deal)
     }
   }
 )
 
 outstream.end()
-await once(outstream, 'end')
 console.log('LDN deals were written to %s', relative(process.cwd(), outfile))
 
 /** @param {{
@@ -43,11 +43,21 @@ console.log('LDN deals were written to %s', relative(process.cwd(), outfile))
   ClientCollateral: string;
  }} deal
 */
-function parseDeal (deal) {
+async function processDeal (deal) {
   if (!deal.VerifiedDeal) return
-  if (!deal.Label || !deal.Label.match(/^(bafy|Qm)/)) return
   if (!ldnClients.has(deal.Client)) return
-  console.log(deal)
+
+  // TODO: handle other CID formats
+  if (!deal.Label || !deal.Label.match(/^(bafy|Qm)/)) return
+
+  const entry = {
+    provider: deal.Provider,
+    pieceCID: deal.PieceCID['/'],
+    payloadCID: deal.Label,
+  }
+  if (!outstream.write(entry)) {
+    await once(outstream, 'drain')
+  }
 }
 
 async function loadLdnClients () {

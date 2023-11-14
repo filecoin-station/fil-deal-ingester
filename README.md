@@ -19,3 +19,17 @@ node scripts/fetch-ldn-clients.js
 ```
 
 The output is committed to git, see [./generated/ldn-clients.csv](./generated/ldn-clients.csv)
+
+### Parse storage deals from StateMarketDetals.json
+
+1. Download the snapshot of StateMarketDeals from Glif: https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst
+
+2. Decompress the file and save it to project's root dir as `StateMarketDeals.json`
+
+3. Run
+
+   ```sh
+   node scripts/parse-market-deals.js
+   ```
+
+The output is NOT committed to git, you can find it in `./generated/deals.json`
