@@ -20,11 +20,15 @@ node scripts/fetch-ldn-clients.js
 
 The output is committed to git, see [./generated/ldn-clients.csv](./generated/ldn-clients.csv)
 
-### Parse storage deals from StateMarketDetals.json
+### Parse storage deals from StateMarketDetails.json
 
 1. Download the snapshot of StateMarketDeals from Glif: https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst
 
+   WARNING: The file has more than 3 GB.
+
 2. Decompress the file and save it to project's root dir as `StateMarketDeals.json`
+
+   WARNING: The decompressed file has over 23 GB
 
 3. Run
 
@@ -32,4 +36,36 @@ The output is committed to git, see [./generated/ldn-clients.csv](./generated/ld
    node scripts/parse-market-deals.js
    ```
 
+   WARNING: This will take very long.
+
 The output is NOT committed to git, you can find it in `./generated/deals.json`
+
+You can create a subset of StateMarketsDeal.json by copying a byte range and then manually editing
+the new file to turn it into a well-formed JSON.
+
+```
+dd if=StateMarketDeals.json of=StateMarketDeals.partial.json count=10240 skip=20971520
+```
+
+The default block size is 1024 bytes:
+- `count=10240` will copy 10240*1024 = ~10MB of data
+- `skip=20971520` will start at the offset ~20GB.
+
+In the partial file:
+ 1. Delete text from the beginning of the file until the first `}}`
+ 2. Change `}}` to `{` (open the top-level object)
+ 3. Find the last `}}` in the file
+ 4. Delete everything after this `}}` block
+ 5. Append `}` (close the top-level object)
+
+### Build retrieval tasks
+
+1. Run the previous step to build `./generated/deals.json`
+
+2. Run
+
+   ```sh
+   node scripts/build-retrieval-tasks.js
+   ```
+
+The output is NOT committed to git, you can find it in `./generated/retrieval-tasks.json`

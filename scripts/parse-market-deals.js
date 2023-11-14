@@ -8,7 +8,7 @@ import { once } from 'node:events'
 
 // See https://docs.filecoin.io/networks/mainnet#genesis
 const GENESIS_TS = new Date('2020-08-24T22:00:00Z').getTime()
-const BLOCK_TIME = 30_000; // 30 seconds
+const BLOCK_TIME = 30_000 // 30 seconds
 
 const ldnClients = await loadLdnClients()
 
@@ -65,7 +65,7 @@ async function processDeal (deal) {
   const entry = {
     provider: deal.Provider,
     pieceCID: deal.PieceCID['/'],
-    payloadCID: deal.Label,
+    payloadCID: deal.Label
   }
   if (!outstream.write(entry)) {
     await once(outstream, 'drain')

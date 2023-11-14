@@ -131,3 +131,4 @@ dist
 
 StateMarketDeals.json
 generated/deals.json
+generated/retrieval-tasks.json
