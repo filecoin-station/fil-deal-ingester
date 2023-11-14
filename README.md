@@ -12,10 +12,10 @@ Remember to install dependencies after cloning this repository locally.
 ❯ npm install
 ```
 
-### Update list of SPs participating in FIL+ LDN
+### Update the list of clients participating in FIL+ LDN
 
 ```
-node scripts/fetch-ldn-providers.js
+node scripts/fetch-ldn-clients.js
 ```
 
-The output is committed to git, see [./generated/ldn-providers.csv](./generated/ldn-providers.csv)
+The output is committed to git, see [./generated/ldn-clients.csv](./generated/ldn-clients.csv)
