@@ -6,6 +6,10 @@ import { fileURLToPath } from 'node:url'
 import JSONStream from 'JSONStream'
 import { once } from 'node:events'
 
+// See https://docs.filecoin.io/networks/mainnet#genesis
+const GENESIS_TS = new Date('2020-08-24T22:00:00Z').getTime()
+const BLOCK_TIME = 30_000; // 30 seconds
+
 const ldnClients = await loadLdnClients()
 
 const outfile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/deals.json')
@@ -49,6 +53,11 @@ async function processDeal (deal) {
 
   // TODO: handle other CID formats
   if (!deal.Label || !deal.Label.match(/^(bafy|Qm)/)) return
+
+  // Skip deals that expire in the next 6 weeks
+  const expires = deal.EndEpoch * BLOCK_TIME + GENESIS_TS
+  const afterSixWeeks = Date.now() + 6 * 7 /* days/week */ * 24 /* hours/day */ * 3600_000
+  if (expires < afterSixWeeks) return
 
   const entry = {
     provider: deal.Provider,
