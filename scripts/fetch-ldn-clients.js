@@ -6,22 +6,30 @@ import { setTimeout } from 'node:timers/promises'
 const DATACAPS_URL = 'https://api.datacapstats.io/public/api/'
 const API_KEY = process.env.API_KEY ?? await getApiKey()
 
-const allLdnProviders = []
+const allLdnClients = []
 
 const notaries = await findNotaries('ldn')
 console.log('Found %s notaries', notaries.length)
 
 for (const notaryAddressId of notaries) {
-  const providers = await getVerifiedClientsOfNotary(notaryAddressId)
-  console.log('Notary %s tracks %s providers', notaryAddressId, providers.length)
-  allLdnProviders.push(...providers)
+  const clients = await getVerifiedClientsOfNotary(notaryAddressId)
+  console.log('Notary %s tracks %s clients', notaryAddressId, clients.length)
+  allLdnClients.push(...clients)
   // slow down to avoid hitting rate limits
   await setTimeout(100)
 }
 
-console.log('Found %s FIL+ LDN providers in total', allLdnProviders.length)
-const outfile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/ldn-providers.csv')
-await fs.writeFile(outfile, allLdnProviders.map(p => `${p}\n`).join(''))
+allLdnClients.sort()
+
+// remove duplicates
+const cleansed = []
+for (let i = 0; i < allLdnClients.length; i++) {
+  if (i === 0 || allLdnClients[i] !== allLdnClients[i - 1]) { cleansed.push(allLdnClients[i]) }
+}
+
+console.log('Found %s FIL+ LDN clients in total', cleansed.length)
+const outfile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/ldn-clients.csv')
+await fs.writeFile(outfile, cleansed.map(p => `${p}\n`).join(''))
 console.log('The list was written to %s', relative(process.cwd(), outfile))
 
 /** @returns {Promise<string>} */
@@ -61,7 +69,7 @@ async function getVerifiedClientsOfNotary (notaryAddressId) {
   }
 
   const body = await res.json()
-  return body.data.map(obj => obj.addressId)
+  return body.data.map(obj => obj.addressId).filter(val => !!val)
 }
 
 function buildUrlWithQueryString (endpointPath, searchParams) {
