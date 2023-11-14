@@ -29,18 +29,22 @@ await pipeline(
       yield * await processDeal(deal, { signal })
     }
   },
-  JSONStream.stringify('[\n  ', ',\n  ', '\n]\n'),
-  createWriteStream(outfile, 'utf-8'),
+  async function * (source, { signal }) {
+    for await (const obj of source) {
+      console.log(obj)
+    }
+  },
+  // JSONStream.stringify('[\n  ', ',\n  ', '\n]\n'),
+  // createWriteStream(outfile, 'utf-8'),
   { signal }
-
 )
 
-console.log('Finished in %s seconds', started/1000)
+console.log('Finished in %s seconds', (Date.now() - started)/1000)
 console.log()
 console.log('Retrieval tasks were written to %s', relative(process.cwd(), outfile))
 console.log('Total CIDs:  %s', stats.total)
 console.log('Retrievable: %s', stats.retrievable)
-console.log('Ratio:       %s%s', stats.retrievable * 100n / stats.total, '%')
+console.log('Ratio:       %s%s', stats.total ? stats.retrievable * 100n / stats.total : '--', '%')
 // TODO: break down per protocol
 
 /** @param {{
