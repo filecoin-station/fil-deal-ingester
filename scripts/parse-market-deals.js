@@ -49,15 +49,18 @@ console.log('LDN deals were written to %s', relative(process.cwd(), outfile))
 */
 async function processDeal (deal) {
   if (!deal.VerifiedDeal) return
-  if (!ldnClients.has(deal.Client)) return
-
-  // TODO: handle other CID formats
-  if (!deal.Label || !deal.Label.match(/^(bafy|Qm)/)) return
 
   // Skip deals that expire in the next 6 weeks
   const expires = deal.EndEpoch * BLOCK_TIME + GENESIS_TS
   const afterSixWeeks = Date.now() + 6 * 7 /* days/week */ * 24 /* hours/day */ * 3600_000
   if (expires < afterSixWeeks) return
+
+  // Skip deals that are not part of FIL+ LDN
+  if (!ldnClients.has(deal.Client)) return
+
+  // Skip deals that don't have payload CID metadata
+  // TODO: handle other CID formats
+  if (!deal.Label || !deal.Label.match(/^(bafy|Qm)/)) return
 
   const entry = {
     provider: deal.Provider,
