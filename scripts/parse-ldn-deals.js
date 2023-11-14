@@ -35,6 +35,7 @@ process.on('beforeExit', () => {
 
 const ldnClients = await loadLdnClients()
 
+try {
 await pipeline(
   createReadStream(infile, 'utf-8'),
   split2(JSON.parse),
@@ -51,6 +52,13 @@ await pipeline(
   createWriteStream(outfile, 'utf-8'),
   { signal }
 )
+} catch (err) {
+  if (err.name === 'AbortError') {
+    console.log('\nAborted.')
+  } else {
+    throw err
+  }
+}
 
 /** @param {{
    Proposal: {
