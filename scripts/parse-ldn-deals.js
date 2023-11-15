@@ -12,7 +12,7 @@ const BLOCK_TIME = 30_000 // 30 seconds
 
 const stats = {
   total: 0n,
-  ldn: 0n,
+  ldn: 0n
 }
 
 const infile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/StateMarketDeals.ndjson')
@@ -21,10 +21,10 @@ const started = Date.now()
 
 const abortController = new AbortController()
 const signal = abortController.signal
-process.on('SIGINT', () => abortController.abort("interrupted"))
+process.on('SIGINT', () => abortController.abort('interrupted'))
 
 process.on('beforeExit', () => {
-  console.log('Finished after %s seconds', (Date.now() - started)/1000)
+  console.log('Finished after %s seconds', (Date.now() - started) / 1000)
   console.log()
   console.log('Total deals:    %s', stats.total)
   console.log('LDN with Label: %s', stats.ldn)
@@ -36,22 +36,22 @@ process.on('beforeExit', () => {
 const ldnClients = await loadLdnClients()
 
 try {
-await pipeline(
-  createReadStream(infile, 'utf-8'),
-  split2(JSON.parse),
-  async function * (source, { signal }) {
-    for await (const deal of source) {
-      stats.total++
-      for await (const out of processDeal(deal, { signal })) {
-        stats.ldn++
-        yield JSON.stringify(out) + '\n'
+  await pipeline(
+    createReadStream(infile, 'utf-8'),
+    split2(JSON.parse),
+    async function * (source, { signal }) {
+      for await (const deal of source) {
+        stats.total++
+        for await (const out of processDeal(deal, { signal })) {
+          stats.ldn++
+          yield JSON.stringify(out) + '\n'
         // console.log(JSON.stringify(out))
+        }
       }
-    }
-  },
-  createWriteStream(outfile, 'utf-8'),
-  { signal }
-)
+    },
+    createWriteStream(outfile, 'utf-8'),
+    { signal }
+  )
 } catch (err) {
   if (err.name === 'AbortError') {
     console.log('\nAborted.')
@@ -85,7 +85,7 @@ await pipeline(
  }} deal
 */
 function * processDeal (deal) {
-  const {VerifiedDeal, EndEpoch, Client, Label, Provider, PieceCID} = deal.Proposal
+  const { VerifiedDeal, EndEpoch, Client, Label, Provider, PieceCID } = deal.Proposal
   assert.strictEqual(typeof VerifiedDeal, 'boolean', `VerifiedDeal is not a boolean: ${JSON.stringify(deal.Proposal)}`)
   if (!VerifiedDeal) return
 
@@ -116,7 +116,6 @@ function * processDeal (deal) {
   }
   yield entry
 }
-
 
 async function loadLdnClients () {
   const data = await readFile(

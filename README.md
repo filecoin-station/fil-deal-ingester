@@ -36,7 +36,7 @@ The output is committed to git, see [./generated/ldn-clients.csv](./generated/ld
    jq --stream -c 'fromstream(1|truncate_stream(inputs))' StateMarketDeals.json > generated/StateMarketDeals.ndjson
    ```
 
-   WARNING: This will take very long.
+   WARNING: This will take very long (more than 1 hour).
 
 The output is NOT committed to git, you can find it in `./generated/StateMarketDeals.ndjson`
 

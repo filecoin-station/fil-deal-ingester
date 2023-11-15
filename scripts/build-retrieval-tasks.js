@@ -12,7 +12,7 @@ const stats = {
   tasks: 0n,
   http: 0n,
   bitswap: 0n,
-  graphsync: 0n,
+  graphsync: 0n
 }
 
 const thisDir = dirname(fileURLToPath(import.meta.url))
@@ -24,39 +24,37 @@ const started = Date.now()
 const abortController = new AbortController()
 const signal = abortController.signal
 setMaxListeners(Infinity, signal)
-process.on('SIGINT', () => abortController.abort("interrupted"))
+process.on('SIGINT', () => abortController.abort('interrupted'))
 
 process.on('beforeExit', () => {
-  console.log('Finished in %s seconds', (Date.now() - started)/1000)
+  console.log('Finished in %s seconds', (Date.now() - started) / 1000)
   console.log()
   console.log('Total CIDs:    %s', stats.total)
-  console.log(' - advertised: %s (%s)', stats.retrievable, ratio(stats.retrievable,stats.total))
+  console.log(' - advertised: %s (%s)', stats.retrievable, ratio(stats.retrievable, stats.total))
   console.log()
   console.log('Total tasks:   %s', stats.tasks)
   console.log(' - http        %s (%s)', stats.http, ratio(stats.http, stats.tasks))
   console.log(' - bitswap     %s (%s)', stats.bitswap, ratio(stats.bitswap, stats.tasks))
   console.log(' - graphsync   %s (%s)', stats.graphsync, ratio(stats.graphsync, stats.tasks))
-
-  // TODO: break down per protocol
   console.log()
   console.log('Retrieval tasks were written to %s', relative(process.cwd(), outfile))
 })
 
 try {
-await pipeline(
-  createReadStream(infile, 'utf-8'),
-  split2(JSON.parse),
-  async function * (source, { signal }) {
-    for await (const deal of source) {
-      for await (const task of processDeal(deal, { signal })) {
-        yield JSON.stringify(task) + '\n'
+  await pipeline(
+    createReadStream(infile, 'utf-8'),
+    split2(JSON.parse),
+    async function * (source, { signal }) {
+      for await (const deal of source) {
+        for await (const task of processDeal(deal, { signal })) {
+          yield JSON.stringify(task) + '\n'
         // console.log(JSON.stringify(task))
+        }
       }
-    }
-  },
-  createWriteStream(outfile, 'utf-8'),
-  { signal }
-)
+    },
+    createWriteStream(outfile, 'utf-8'),
+    { signal }
+  )
 } catch (err) {
   if (err.name === 'AbortError') {
     console.log('\nAborted.')
@@ -113,7 +111,6 @@ async function * processDeal (deal, { signal }) {
       protocol
     }
   }
-
 }
 
 /**
@@ -141,7 +138,7 @@ async function lookupRetrievalProviders (cid, { signal }) {
   return body.MultihashResults.map(r => r.ProviderResults)
 }
 
-function ratio(fraction, total) {
+function ratio (fraction, total) {
   if (!total) return '--'
   return (100n * fraction / total).toString() + '%'
 }
