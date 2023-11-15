@@ -68,3 +68,18 @@ The output is NOT committed to git, you can find it in `./generated/ldn-deals.nd
    ```
 
 The output is NOT committed to git, you can find it in `./generated/retrieval-tasks.ndjson`
+
+### Build SQL query to update SPARK DB
+
+1. Run the previous step to build `./generated/retrieval-tasks.ndjson`
+
+2. Run
+
+   ```sh
+   node scripts/build-spark-update-sql.js
+   ```
+
+   The output is NOT committed to git, you can find it in `./generated/update-spark-db.sql`
+
+3. Run the SQL query via `fly pg connect -a spark-db -d spark`, details TBD.
+   See also https://fly.io/docs/postgres/connecting/connecting-with-flyctl/
