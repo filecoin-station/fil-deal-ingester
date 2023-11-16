@@ -68,3 +68,33 @@ The output is NOT committed to git, you can find it in `./generated/ldn-deals.nd
    ```
 
 The output is NOT committed to git, you can find it in `./generated/retrieval-tasks.ndjson`
+
+### Build SQL query to update SPARK DB
+
+1. Run the previous step to build `./generated/retrieval-tasks.ndjson`
+
+2. Run
+
+   ```sh
+   node scripts/build-spark-update-sql.js
+   ```
+
+   The output is NOT committed to git, you can find it in `./generated/update-spark-db.sql`
+
+### Apply updates to live SPARK DB
+
+1. Setup port forwarding between your local computer and Postgres instance hosted by Fly.io
+  ([docs](https://fly.io/docs/postgres/connecting/connecting-with-flyctl/)). Remember to use a
+  different port if you have a local Postgres server for development!
+
+   ```sh
+   fly proxy 5454:5432 -a spark-db
+   ```
+
+2. Find spark-db entry in 1Password and get the user and password from the connection string.
+
+3. Run the following command to apply the updates:
+
+   ```sh
+   psql postgres://user:password@localhost:5454/spark -f generated/update-spark-db.sql
+   ```
