@@ -3,7 +3,7 @@ import { dirname, resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { setTimeout } from 'node:timers/promises'
 
-const DATACAPS_URL = 'https://api.datacapstats.io/public/api/'
+const DATACAPS_URL = 'https://api.datacapstats.io/public/api'
 const API_KEY = process.env.API_KEY ?? await getApiKey()
 
 const allLdnClients = []

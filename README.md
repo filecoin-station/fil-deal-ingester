@@ -51,7 +51,7 @@ output file at any line boundary.
 2. Run
 
    ```sh
-   node scripts/parse-deals.js
+   node scripts/parse-ldn-deals.js
    ```
 
 The output is NOT committed to git, you can find it in `./generated/ldn-deals.ndjson`
