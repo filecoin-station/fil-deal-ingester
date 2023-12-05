@@ -16,7 +16,8 @@ const stats = {
 }
 
 const thisDir = dirname(fileURLToPath(import.meta.url))
-const infile = resolve(thisDir, '../generated/ldn-deals.ndjson')
+const infile = process.argv[2] ?? resolve(thisDir, '../generated/ldn-deals.ndjson')
+console.log('Processing LDN deals from %s', infile)
 const outfile = resolve(thisDir, '../generated/retrieval-tasks.ndjson')
 
 const started = Date.now()
@@ -45,12 +46,29 @@ try {
     createReadStream(infile, 'utf-8'),
     split2(JSON.parse),
     async function * (source, { signal }) {
-      for await (const deal of source) {
-        for await (const task of processDeal(deal, { signal })) {
-          yield JSON.stringify(task) + '\n'
-        // console.log(JSON.stringify(task))
-        }
+      const queue = []
+      const collect = async () => {
+        const results = await Promise.all(queue)
+        queue.splice(0)
+        return results.flat()
       }
+
+      for await (const deal of source) {
+          queue.push((async () => {
+            const lines = []
+            for await (const task of processDeal(deal, { signal })) {
+              lines.push(JSON.stringify(task) + '\n')
+              // console.log('%s -> %s', JSON.stringify(deal), JSON.stringify(task))
+            }
+            return lines
+         })())
+         if (queue.length === 5) {
+            const lines = await collect()
+            yield * lines
+         }
+      }
+      const lines = await collect()
+      yield * lines
     },
     createWriteStream(outfile, 'utf-8'),
     { signal }
