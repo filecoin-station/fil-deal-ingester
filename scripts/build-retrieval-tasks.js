@@ -71,6 +71,14 @@ try {
             const lines = await collect()
             yield * lines
          }
+
+         if (stats.total % 1_000n === 0n) {
+          console.log(
+            '%s processed %s thousands deals',
+            new Date().toISOString(),
+            (stats.total / 1_000n).toString()
+          )
+        }
       }
       const lines = await collect()
       yield * lines
