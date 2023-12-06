@@ -61,13 +61,19 @@ The output is NOT committed to git, you can find it in `./generated/ldn-deals.nd
 
 1. Run the previous step to build `./generated/ldn-deals.ndjson`
 
-2. Run
+2. If you have run this step in the past, delete cached IPNI responses.
+
+  ```sh
+  rm -rf .cache/providers
+  ```
+
+3. Run
 
    ```sh
    node scripts/build-retrieval-tasks.js
    ```
 
-The output is NOT committed to git, you can find it in `./generated/retrieval-tasks.ndjson`
+The output is NOT committed to git; you can find it in `./generated/retrieval-tasks.ndjson`
 
 ### Build SQL query to update SPARK DB
 

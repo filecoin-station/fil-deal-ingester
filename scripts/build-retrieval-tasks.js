@@ -1,6 +1,7 @@
 import { setMaxListeners } from 'events'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createReadStream, createWriteStream } from 'node:fs'
-import { dirname, resolve, relative } from 'node:path'
+import { dirname, resolve, relative, join } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
 import split2 from 'split2'
@@ -19,6 +20,10 @@ const thisDir = dirname(fileURLToPath(import.meta.url))
 const infile = process.argv[2] ?? resolve(thisDir, '../generated/ldn-deals.ndjson')
 console.log('Processing LDN deals from %s', infile)
 const outfile = resolve(thisDir, '../generated/retrieval-tasks.ndjson')
+
+const cacheDir = fileURLToPath(new URL('../.cache', import.meta.url))
+await mkdir(cacheDir, { recursive: true })
+await mkdir(join(cacheDir, 'providers'), { recursive: true })
 
 const started = Date.now()
 
@@ -144,16 +149,30 @@ async function * processDeal (deal, { signal }) {
 }>>>}
  */
 async function lookupRetrievalProviders (cid, { signal }) {
+  const pathOfCachedResponse = join(cacheDir, 'providers', cid + '.json')
+  try {
+    const text = await readFile(pathOfCachedResponse, 'utf-8')
+    if (!text) return null // 404 not found
+    return JSON.parse()
+  } catch (err) {
+    if (err.code !== 'ENOENT') console.warn('Cannot read cached contacts:', err)
+  }
+
   const res = await fetch(`http://cid.contact/cid/${cid}`, { signal })
 
-  if (res.status === 404) return undefined
+  if (res.status === 404) {
+    await writeFile(pathOfCachedResponse, '')
+    return undefined
+  }
 
   if (!res.ok) {
     throw new Error(`Cannot query cid.contact: ${res.status}\n${await res.text()}`)
   }
 
   const body = await res.json()
-  return body.MultihashResults.map(r => r.ProviderResults)
+  const providers = body.MultihashResults.map(r => r.ProviderResults)
+  await writeFile(pathOfCachedResponse, JSON.stringify(providers))
+  return providers
 }
 
 function ratio (fraction, total) {
