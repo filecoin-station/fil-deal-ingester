@@ -136,6 +136,13 @@ async function * processDeal (deal, { signal }) {
     stats.tasks++
     stats[protocol]++
 
+    if (protocol === 'graphsync' && providerAddress.endsWith('/tcp/80/http')) {
+      // there seems to be an issue with Boost advertisements to IPNI
+      // some providers report Graphsync protocol for an HTTP multiaddr which can serve GW retrievals
+      // let's try to retrieve from that address so that we have more tasks to do
+      protocol = 'http'
+    }
+
     if (protocol !== 'http') continue
     // const fullAddress = `${providerAddress}/p2p/${p.Provider.ID}`
     // HTTP retrievals don't use ProviderID
