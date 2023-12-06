@@ -70,7 +70,7 @@ The output is NOT committed to git, you can find it in `./generated/ldn-deals.nd
 3. Run
 
    ```sh
-   node scripts/build-retrieval-tasks.js
+   node --no-warnings scripts/build-retrieval-tasks.js
    ```
 
 The output is NOT committed to git; you can find it in `./generated/retrieval-tasks.ndjson`
