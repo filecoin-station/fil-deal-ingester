@@ -9,7 +9,7 @@ import varint from 'varint'
 
 const stats = {
   total: 0n,
-  retrievable: 0n,
+  advertised: 0n,
   tasks: 0n,
   http: 0n,
   bitswap: 0n,
@@ -36,7 +36,7 @@ process.on('beforeExit', () => {
   console.log('Finished in %s seconds', (Date.now() - started) / 1000)
   console.log()
   console.log('Total CIDs:    %s', stats.total)
-  console.log(' - advertised: %s (%s)', stats.retrievable, ratio(stats.retrievable, stats.total))
+  console.log(' - advertised: %s (%s)', stats.advertised, ratio(stats.advertised, stats.total))
   console.log()
   console.log('Total tasks:   %s', stats.tasks)
   console.log(' - http        %s (%s)', stats.http, ratio(stats.http, stats.tasks))
@@ -100,7 +100,7 @@ async function * processDeal (deal, { signal }) {
     return
   }
 
-  stats.retrievable++
+  stats.advertised++
 
   for (const p of providers.flat()) {
     // console.log(p)
