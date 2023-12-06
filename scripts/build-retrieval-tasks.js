@@ -160,7 +160,7 @@ async function lookupRetrievalProviders (cid, { signal }) {
   try {
     const text = await readFile(pathOfCachedResponse, 'utf-8')
     if (!text) return null // 404 not found
-    return JSON.parse()
+    return JSON.parse(text)
   } catch (err) {
     if (err.code !== 'ENOENT') console.warn('Cannot read cached contacts:', err)
   }
