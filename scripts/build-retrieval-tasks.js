@@ -111,14 +111,17 @@ async function * processDeal (deal, { signal }) {
     // https://github.com/filecoin-project/boost/blob/main/indexprovider/wrapper.go#L168-L172
     // https://github.com/filecoin-project/boost/blob/main/indexprovider/wrapper.go#L195
 
+    const protocolCode = varint.decode(Buffer.from(p.Metadata, 'base64'))
     const protocol = {
       0x900: 'bitswap',
       0x910: 'graphsync',
       0x0920: 'http',
       4128768: 'graphsync'
-    }[varint.decode(Buffer.from(p.Metadata, 'base64'))]
+    }[protocolCode]
     const providerAddress = p.Provider.Addrs[0]
-    if (!protocol || !providerAddress) {
+    if (!providerAddress) continue
+    if (!protocol) {
+      console.log('Unknown protocol: %s', protocolCode)
       continue
     }
     const fullAddress = `${providerAddress}/p2p/${p.Provider.ID}`
