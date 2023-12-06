@@ -124,10 +124,14 @@ async function * processDeal (deal, { signal }) {
       console.log('Unknown protocol: %s', protocolCode)
       continue
     }
-    const fullAddress = `${providerAddress}/p2p/${p.Provider.ID}`
 
     stats.tasks++
     stats[protocol]++
+
+    if (protocol !== 'http') continue
+    // const fullAddress = `${providerAddress}/p2p/${p.Provider.ID}`
+    // HTTP retrievals don't use ProviderID
+    fullAddress = providerAddress
 
     yield {
       minerId: deal.provider,
