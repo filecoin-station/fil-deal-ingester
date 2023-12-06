@@ -30,10 +30,16 @@ The output is committed to git, see [./generated/ldn-clients.csv](./generated/ld
 
    WARNING: The decompressed file has over 23 GB
 
-3. Run
+3. Build the tool for converting `StateMarketDeals.json` to newline-delimited JSON
 
    ```sh
-   jq --stream -c 'fromstream(1|truncate_stream(inputs))' StateMarketDeals.json > generated/StateMarketDeals.ndjson
+   cargo build --release
+   ```
+
+4. Run
+
+   ```sh
+   ./target/release/fil-deal-ingester StateMarketDeals.json > generated/StateMarketDeals.ndjson
    ```
 
    WARNING: This will take very long (more than 1 hour).
