@@ -51,7 +51,7 @@ try {
           console.log(
             '%s processed %s million deals',
             new Date().toISOString(),
-           ( stats.total / 1_000_000n).toString()
+            (stats.total / 1_000_000n).toString()
           )
         }
       }

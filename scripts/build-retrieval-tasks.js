@@ -4,7 +4,7 @@ import { createReadStream, createWriteStream } from 'node:fs'
 import { dirname, resolve, relative, join } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
-import {createServer} from 'node:http'
+import { createServer } from 'node:http'
 import split2 from 'split2'
 import varint from 'varint'
 
@@ -34,7 +34,7 @@ const signal = abortController.signal
 setMaxListeners(Infinity, signal)
 process.on('SIGINT', () => abortController.abort('interrupted'))
 
-function logStats() {
+function logStats () {
   console.log('Finished in %s seconds', (Date.now() - started) / 1000)
   console.log()
   console.log('Total CIDs:    %s', stats.total)
@@ -61,7 +61,7 @@ if (process.env.SERVE) {
     res.writeHead(200, { 'content-type': 'application/x-ndjson' })
     createReadStream(outfile).pipe(res)
   })
-  .listen(3000, () => console.log('Listening at http://127.0.0.1:3000/'))
+    .listen(3000, () => console.log('Listening at http://127.0.0.1:3000/'))
 }
 
 try {
@@ -81,20 +81,20 @@ try {
         // Uncomment this line to skip some LDN deals at the start of the file
         // if (stats.total < 148000) continue
 
-          queue.push((async () => {
-            const lines = []
-            for await (const task of processDeal(deal, { signal })) {
-              lines.push(JSON.stringify(task) + '\n')
-              // console.log('%s -> %s', JSON.stringify(deal), JSON.stringify(task))
-            }
-            return lines
-         })())
-         if (queue.length === 5) {
-            const lines = await collect()
-            yield * lines
-         }
+        queue.push((async () => {
+          const lines = []
+          for await (const task of processDeal(deal, { signal })) {
+            lines.push(JSON.stringify(task) + '\n')
+            // console.log('%s -> %s', JSON.stringify(deal), JSON.stringify(task))
+          }
+          return lines
+        })())
+        if (queue.length === 5) {
+          const lines = await collect()
+          yield * lines
+        }
 
-         if (stats.total % 1_000n === 0n) {
+        if (stats.total % 1_000n === 0n) {
           console.log(
             '%s processed %s thousands deals',
             new Date().toISOString(),
@@ -155,7 +155,7 @@ async function * processDeal (deal, { signal }) {
     // https://github.com/filecoin-project/boost/blob/main/indexprovider/wrapper.go#L195
 
     const protocolCode = varint.decode(Buffer.from(p.Metadata, 'base64'))
-    const protocol = {
+    let protocol = {
       0x900: 'bitswap',
       0x910: 'graphsync',
       0x0920: 'http',
