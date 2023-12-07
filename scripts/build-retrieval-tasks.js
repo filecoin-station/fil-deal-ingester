@@ -146,7 +146,7 @@ async function * processDeal (deal, { signal }) {
     if (protocol !== 'http') continue
     // const fullAddress = `${providerAddress}/p2p/${p.Provider.ID}`
     // HTTP retrievals don't use ProviderID
-    fullAddress = providerAddress
+    const fullAddress = providerAddress
 
     yield {
       minerId: deal.provider,
