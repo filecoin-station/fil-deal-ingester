@@ -4,6 +4,7 @@ import { createReadStream, createWriteStream } from 'node:fs'
 import { dirname, resolve, relative, join } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
+import {createServer} from 'node:http'
 import split2 from 'split2'
 import varint from 'varint'
 
@@ -20,6 +21,7 @@ const thisDir = dirname(fileURLToPath(import.meta.url))
 const infile = process.argv[2] ?? resolve(thisDir, '../generated/ldn-deals.ndjson')
 console.log('Processing LDN deals from %s', infile)
 const outfile = resolve(thisDir, '../generated/retrieval-tasks.ndjson')
+await mkdir(dirname(outfile), { recursive: true })
 
 const cacheDir = fileURLToPath(new URL('../.cache', import.meta.url))
 await mkdir(cacheDir, { recursive: true })
@@ -32,7 +34,7 @@ const signal = abortController.signal
 setMaxListeners(Infinity, signal)
 process.on('SIGINT', () => abortController.abort('interrupted'))
 
-process.on('beforeExit', () => {
+function logStats() {
   console.log('Finished in %s seconds', (Date.now() - started) / 1000)
   console.log()
   console.log('Total CIDs:    %s', stats.total)
@@ -44,7 +46,23 @@ process.on('beforeExit', () => {
   console.log(' - graphsync   %s (%s)', stats.graphsync, ratio(stats.graphsync, stats.tasks))
   console.log()
   console.log('Retrieval tasks were written to %s', relative(process.cwd(), outfile))
-})
+}
+
+process.on('beforeExit', logStats)
+
+let status = 'building'
+if (process.env.SERVE) {
+  createServer((req, res) => {
+    if (req.method === 'GET' && req.url === '/health') {
+      res.writeHead(200, { 'content-type': 'text/plain' })
+      res.end(status)
+      return
+    }
+    res.writeHead(200, { 'content-type': 'application/x-ndjson' })
+    createReadStream(outfile).pipe(res)
+  })
+  .listen(3000, () => console.log('Listening at http://127.0.0.1:3000/'))
+}
 
 try {
   await pipeline(
@@ -59,6 +77,10 @@ try {
       }
 
       for await (const deal of source) {
+        stats.total++
+        // Uncomment this line to skip some LDN deals at the start of the file
+        // if (stats.total < 148000) continue
+
           queue.push((async () => {
             const lines = []
             for await (const task of processDeal(deal, { signal })) {
@@ -78,6 +100,14 @@ try {
             new Date().toISOString(),
             (stats.total / 1_000n).toString()
           )
+
+          // Uncomment this block to skip LDN deals at the end of the file
+          // if (stats.total >= 150000) {
+          //   const lines = await collect()
+          //   yield * lines
+          //   abortController.abort()
+          //   signal.throwIfAborted()
+          // }
         }
       }
       const lines = await collect()
@@ -94,6 +124,12 @@ try {
   }
 }
 
+status = 'done'
+if (process.env.SERVE) {
+  logStats()
+  console.log('Staying live to serve HTTP requests')
+}
+
 /** @param {{
    provider: string;
    pieceCID: string;
@@ -101,7 +137,6 @@ try {
  }} deal
 */
 async function * processDeal (deal, { signal }) {
-  stats.total++
   const providers = await lookupRetrievalProviders(deal.payloadCID, { signal })
   if (!providers) {
     // console.log(deal.payladCID, 'unreachable')
