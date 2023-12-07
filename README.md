@@ -42,7 +42,7 @@ The output is committed to git, see [./generated/ldn-clients.csv](./generated/ld
    ./target/release/fil-deal-ingester StateMarketDeals.json > generated/StateMarketDeals.ndjson
    ```
 
-   WARNING: This will take very long (more than 1 hour).
+   This will take about 3-5 minutes to complete.
 
 The output is NOT committed to git, you can find it in `./generated/StateMarketDeals.ndjson`
 
@@ -60,6 +60,8 @@ output file at any line boundary.
    node scripts/parse-ldn-deals.js
    ```
 
+   This will take several minutes to complete.
+
 The output is NOT committed to git, you can find it in `./generated/ldn-deals.ndjson`
 
 
@@ -69,9 +71,9 @@ The output is NOT committed to git, you can find it in `./generated/ldn-deals.nd
 
 2. If you have run this step in the past, delete cached IPNI responses.
 
-  ```sh
-  rm -rf .cache/providers
-  ```
+   ```sh
+   rm -rf .cache/providers
+   ```
 
 3. Run
 
@@ -79,7 +81,7 @@ The output is NOT committed to git, you can find it in `./generated/ldn-deals.nd
    node --no-warnings scripts/build-retrieval-tasks.js
    ```
 
-This process takes several hours to days to complete.
+   This process takes several hours to days to complete.
 
 The output is NOT committed to git; you can find it in `./generated/retrieval-tasks.ndjson`
 
