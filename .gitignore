@@ -134,3 +134,8 @@ generated/ldn-deals.ndjson
 generated/retrieval-tasks.ndjson
 generated/StateMarketDeals.ndjson
 generated/update-spark-db.sql
+
+
+# Added by cargo
+
+/target

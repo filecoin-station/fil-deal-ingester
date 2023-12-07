@@ -30,13 +30,19 @@ The output is committed to git, see [./generated/ldn-clients.csv](./generated/ld
 
    WARNING: The decompressed file has over 23 GB
 
-3. Run
+3. Build the tool for converting `StateMarketDeals.json` to newline-delimited JSON
 
    ```sh
-   jq --stream -c 'fromstream(1|truncate_stream(inputs))' StateMarketDeals.json > generated/StateMarketDeals.ndjson
+   cargo build --release
    ```
 
-   WARNING: This will take very long (more than 1 hour).
+4. Run
+
+   ```sh
+   ./target/release/fil-deal-ingester StateMarketDeals.json > generated/StateMarketDeals.ndjson
+   ```
+
+   This will take about 3-5 minutes to complete.
 
 The output is NOT committed to git, you can find it in `./generated/StateMarketDeals.ndjson`
 
@@ -51,8 +57,10 @@ output file at any line boundary.
 2. Run
 
    ```sh
-   node scripts/parse-deals.js
+   node scripts/parse-ldn-deals.js
    ```
+
+   This will take several minutes to complete.
 
 The output is NOT committed to git, you can find it in `./generated/ldn-deals.ndjson`
 
@@ -61,13 +69,41 @@ The output is NOT committed to git, you can find it in `./generated/ldn-deals.nd
 
 1. Run the previous step to build `./generated/ldn-deals.ndjson`
 
-2. Run
+2. If you have run this step in the past, delete cached IPNI responses.
 
    ```sh
-   node scripts/build-retrieval-tasks.js
+   rm -rf .cache/providers
    ```
 
-The output is NOT committed to git, you can find it in `./generated/retrieval-tasks.ndjson`
+3. Run
+
+   ```sh
+   node --no-warnings scripts/build-retrieval-tasks.js
+   ```
+
+   This process takes several hours to days to complete.
+
+The output is NOT committed to git; you can find it in `./generated/retrieval-tasks.ndjson`
+
+#### Running on Fly.io
+
+You can run this step on Fly.io if you prefer.
+
+```sh
+fly deploy
+```
+
+The command will build a new Docker container with your `generated/ldn-deals.ndjson`, deploy it to
+Fly, and run the code there.
+
+- You can monitor the progress in Fly Dashboard: https://fly.io/apps/build-retrieval-tasks/monitoring
+- The health endpoint returns "building" or "done": https://build-retrieval-tasks.fly.dev/health
+
+After the task is finished, you can download retrieval tasks using the following command:
+
+```sh
+curl https://build-retrieval-tasks.fly.dev/ > ./generated/retrieval-tasks.ndjson
+```
 
 ### Build SQL query to update SPARK DB
 

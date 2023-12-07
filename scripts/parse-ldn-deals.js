@@ -47,6 +47,13 @@ try {
           yield JSON.stringify(out) + '\n'
         // console.log(JSON.stringify(out))
         }
+        if (stats.total % 1_000_000n === 0n) {
+          console.log(
+            '%s processed %s million deals',
+            new Date().toISOString(),
+            (stats.total / 1_000_000n).toString()
+          )
+        }
       }
     },
     createWriteStream(outfile, 'utf-8'),
@@ -85,15 +92,20 @@ try {
  }} deal
 */
 function * processDeal (deal) {
-  const { VerifiedDeal, EndEpoch, Client, Label, Provider, PieceCID } = deal.Proposal
+  const { VerifiedDeal, StartEpoch, EndEpoch, Client, Label, Provider, PieceCID } = deal.Proposal
   assert.strictEqual(typeof VerifiedDeal, 'boolean', `VerifiedDeal is not a boolean: ${JSON.stringify(deal.Proposal)}`)
   if (!VerifiedDeal) return
 
   // FIXME: investigate why some deals don't have any PieceCID
   if (!PieceCID) return
 
+  // Skip deals that were created before June 2023 (this date is somewhat arbitrary :shrug:)
+  assert.strictEqual(typeof StartEpoch, 'number', `StartEpoch is not a number: ${JSON.stringify(deal.Proposal)}`)
+  const started = StartEpoch * BLOCK_TIME + GENESIS_TS
+  if (started < new Date('2023-06-01T00:00:00.000Z')) return
+
   // Skip deals that expire in the next 6 weeks
-  assert.strictEqual(typeof EndEpoch, 'number', `Epoch is not a number: ${JSON.stringify(deal.Proposal)}`)
+  assert.strictEqual(typeof EndEpoch, 'number', `EndEpoch is not a number: ${JSON.stringify(deal.Proposal)}`)
   const expires = EndEpoch * BLOCK_TIME + GENESIS_TS
   const afterSixWeeks = Date.now() + 6 * 7 /* days/week */ * 24 /* hours/day */ * 3600_000
   if (expires < afterSixWeeks) return
