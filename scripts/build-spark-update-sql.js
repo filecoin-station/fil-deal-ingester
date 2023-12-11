@@ -21,13 +21,18 @@ await pipeline(
   split2(JSON.parse),
   async function * (source, { signal }) {
     yield 'DELETE FROM retrieval_templates;\n'
-    yield 'INSERT INTO retrieval_templates (cid, provider_address, protocol) VALUES'
-    let first = true
+
+    let counter = 0
     for await (const task of source) {
+      counter++
       signal.throwIfAborted()
 
-      yield first ? '\n  ' : ',\n  '
-      first = false
+      if (counter % 5000 === 1) {
+        if (counter > 1) yield ';\n'
+        yield 'INSERT INTO retrieval_templates (cid, provider_address, protocol) VALUES\n'
+      } else {
+        yield ',\n'
+      }
 
       const q = `(${[
         task.cid, task.address, task.protocol
