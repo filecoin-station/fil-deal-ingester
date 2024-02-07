@@ -18,7 +18,7 @@ Remember to install dependencies after cloning this repository locally.
 node scripts/fetch-ldn-clients.js
 ```
 
-The output is committed to git, see [./generated/ldn-clients.csv](./generated/ldn-clients.csv)
+The output is committed to git; see [./generated/ldn-clients.csv](./generated/ldn-clients.csv)
 
 ### Download StateMarketDetails.json and convert it to ND-JSON format
 
@@ -26,25 +26,21 @@ The output is committed to git, see [./generated/ldn-clients.csv](./generated/ld
 
    WARNING: The file has more than 3 GB.
 
-2. Decompress the file and save it to project's root dir as `StateMarketDeals.json`
-
-   WARNING: The decompressed file has over 23 GB
-
-3. Build the tool for converting `StateMarketDeals.json` to newline-delimited JSON
+2. Build the tool for converting `StateMarketDeals.json` to newline-delimited JSON
 
    ```sh
    cargo build --release
    ```
 
-4. Run
+3. Run
 
    ```sh
-   ./target/release/fil-deal-ingester StateMarketDeals.json > generated/StateMarketDeals.ndjson
+   ./target/release/fil-deal-ingester StateMarketDeals.json.zst > generated/StateMarketDeals.ndjson
    ```
 
    This will take about 3-5 minutes to complete.
 
-The output is NOT committed to git, you can find it in `./generated/StateMarketDeals.ndjson`
+The output is NOT committed to git; you can find it in `./generated/StateMarketDeals.ndjson`.
 
 You can create a smaller file by aborting the `jq` command by pressing Ctrl+C and/or truncating the
 output file at any line boundary.
@@ -62,7 +58,7 @@ output file at any line boundary.
 
    This will take several minutes to complete.
 
-The output is NOT committed to git, you can find it in `./generated/ldn-deals.ndjson`
+The output is NOT committed to git; you can find it in `./generated/ldn-deals.ndjson`
 
 
 ### Build retrieval tasks
@@ -115,7 +111,7 @@ curl https://build-retrieval-tasks.fly.dev/ > ./generated/retrieval-tasks.ndjson
    node scripts/build-spark-update-sql.js
    ```
 
-   The output is NOT committed to git, you can find it in `./generated/update-spark-db.sql`
+   The output is NOT committed to git; you can find it in `./generated/update-spark-db.sql`
 
 ### Apply updates to live SPARK DB
 

@@ -1,18 +1,24 @@
 use json_event_parser::{JsonEvent, JsonReader, JsonWriter};
 use std::env;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 
 fn main() {
     env_logger::init();
 
     let infile = match env::args().skip(1).next() {
         Some(f) => f,
-        None => panic!("Missing required argument: path to StorageMarketDeals.json"),
+        None => panic!("Missing required argument: path to StorageMarketDeals.json.zst"),
     };
 
+    assert!(
+        infile.ends_with(".json.zst"),
+        "The StorageMarketDeals file must have .json.zst extension"
+    );
     let f = File::open(infile).expect("cannot open input file");
-    let mut reader = JsonReader::from_reader(BufReader::new(f));
+    let decoder =
+        zstd::stream::Decoder::new(BufReader::new(f)).expect("cannot create zstd decoder");
+    let mut reader = JsonReader::from_reader(BufReader::new(decoder));
 
     let mut buffer = Vec::new();
 
