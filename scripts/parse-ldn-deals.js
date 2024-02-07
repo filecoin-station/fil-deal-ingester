@@ -104,11 +104,9 @@ function * processDeal (deal) {
   const started = StartEpoch * BLOCK_TIME + GENESIS_TS
   if (started < new Date('2023-06-01T00:00:00.000Z')) return
 
-  // Skip deals that expire in the next 6 weeks
+  // Calculate when the deal expires
   assert.strictEqual(typeof EndEpoch, 'number', `EndEpoch is not a number: ${JSON.stringify(deal.Proposal)}`)
   const expires = EndEpoch * BLOCK_TIME + GENESIS_TS
-  const afterSixWeeks = Date.now() + 6 * 7 /* days/week */ * 24 /* hours/day */ * 3600_000
-  if (expires < afterSixWeeks) return
 
   // Skip deals that are not part of FIL+ LDN
   assert.strictEqual(typeof Client, 'string', `Client is not a string: ${JSON.stringify(deal.Proposal)}`)
@@ -124,7 +122,8 @@ function * processDeal (deal) {
   const entry = {
     provider: Provider,
     pieceCID: PieceCID['/'],
-    payloadCID: Label
+    payloadCID: Label,
+    expires,
   }
   yield entry
 }
