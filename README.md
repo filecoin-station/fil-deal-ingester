@@ -60,50 +60,9 @@ output file at any line boundary.
 
 The output is NOT committed to git; you can find it in `./generated/ldn-deals.ndjson`
 
-
-### Build retrieval tasks
-
-1. Run the previous step to build `./generated/ldn-deals.ndjson`
-
-2. If you have run this step in the past, delete cached IPNI responses.
-
-   ```sh
-   rm -rf .cache/providers
-   ```
-
-3. Run
-
-   ```sh
-   node --no-warnings scripts/build-retrieval-tasks.js
-   ```
-
-   This process takes several hours to days to complete.
-
-The output is NOT committed to git; you can find it in `./generated/retrieval-tasks.ndjson`
-
-#### Running on Fly.io
-
-You can run this step on Fly.io if you prefer.
-
-```sh
-fly deploy
-```
-
-The command will build a new Docker container with your `generated/ldn-deals.ndjson`, deploy it to
-Fly, and run the code there.
-
-- You can monitor the progress in Fly Dashboard: https://fly.io/apps/build-retrieval-tasks/monitoring
-- The health endpoint returns "building" or "done": https://build-retrieval-tasks.fly.dev/health
-
-After the task is finished, you can download retrieval tasks using the following command:
-
-```sh
-curl https://build-retrieval-tasks.fly.dev/ > ./generated/retrieval-tasks.ndjson
-```
-
 ### Build SQL query to update SPARK DB
 
-1. Run the previous step to build `./generated/retrieval-tasks.ndjson`
+1. Run the previous step to build `./generated/ldn-deals.ndjson`
 
 2. Run
 
