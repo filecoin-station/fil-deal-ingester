@@ -108,6 +108,10 @@ function * processDeal (deal) {
   assert.strictEqual(typeof EndEpoch, 'number', `EndEpoch is not a number: ${JSON.stringify(deal.Proposal)}`)
   const expires = EndEpoch * BLOCK_TIME + GENESIS_TS
 
+   // Skip deals that expire in 24 hours
+   const tomorrow = Date.now() + 24 /* hours/day */ * 3600_000
+   if (expires < tomorrow) return
+
   // Skip deals that are not part of FIL+ LDN
   assert.strictEqual(typeof Client, 'string', `Client is not a string: ${JSON.stringify(deal.Proposal)}`)
   if (!ldnClients.has(Client)) return
