@@ -21,7 +21,11 @@ await pipeline(
   createReadStream(infile, 'utf-8'),
   split2(JSON.parse),
   async function * (source, { signal }) {
-    yield 'TRUNCATE TABLE retrievable_deals;\n'
+    // FIXME: on conflict update expires_at to MAX(old.expires_at, new.expires_at)
+    const END_OF_INSERT_STATEMENT = '\nON CONFLICT DO NOTHING;\n'
+
+    // yield 'TRUNCATE TABLE retrievable_deals;\n'
+    yield 'DELETE FROM retrievable_deals WHERE expires_at < now();\n'
 
     let counter = 0
     for await (const task of source) {
@@ -32,8 +36,7 @@ await pipeline(
       signal.throwIfAborted()
 
       if (counter % 5000 === 1) {
-        // FIXME: on conflict update expires_at to MAX(old.expires_at, new.expires_at)
-        if (counter > 1) yield '\nON CONFLICT DO NOTHING;\n'
+        if (counter > 1) yield END_OF_INSERT_STATEMENT;
         yield 'INSERT INTO retrievable_deals (cid, expires_at) VALUES\n'
       } else {
         yield ',\n'
@@ -45,7 +48,7 @@ await pipeline(
       yield q
       // console.log(q)
     }
-    yield ';'
+    yield END_OF_INSERT_STATEMENT
   },
   createWriteStream(outfile, 'utf-8')
 )
