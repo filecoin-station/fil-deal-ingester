@@ -30,12 +30,17 @@ fn main() {
     loop {
         let event = reader.read_event(&mut buffer).expect("cannot parse JSON");
         log::debug!("{:?}", event);
-        if event == JsonEvent::Eof {
-            break;
-        }
 
         match event {
             JsonEvent::ObjectKey(_) => parse_deal(&mut reader, &mut buffer),
+            JsonEvent::EndObject => {
+                let event = reader.read_event(&mut buffer).expect("cannot parse JSON");
+                if event == JsonEvent::Eof {
+                    break;
+                } else {
+                    panic!("unexpected JSON event after EndObject: {event:?}")
+                }
+            }
             _ => panic!("unexpected JSON event: {event:?}"),
         };
     }
