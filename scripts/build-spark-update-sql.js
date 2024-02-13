@@ -21,7 +21,8 @@ await pipeline(
   createReadStream(infile, 'utf-8'),
   split2(JSON.parse),
   async function * (source, { signal }) {
-    yield 'TRUNCATE TABLE retrievable_deals;\n'
+    // yield 'TRUNCATE TABLE retrievable_deals;\n'
+    yield 'DELETE FROM retrievable_deals WHERE expires_at < now();\n'
 
     let counter = 0
     for await (const task of source) {
