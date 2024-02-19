@@ -37,13 +37,13 @@ await pipeline(
 
       if (counter % 5000 === 1) {
         if (counter > 1) yield END_OF_INSERT_STATEMENT;
-        yield 'INSERT INTO retrievable_deals (cid, expires_at) VALUES\n'
+        yield 'INSERT INTO retrievable_deals (cid, miner_id, expires_at) VALUES\n'
       } else {
         yield ',\n'
       }
 
       const q = `(${[
-        task.payloadCID, new Date(task.expires).toISOString()
+        task.payloadCID, task.provider, new Date(task.expires).toISOString()
       ].map(pg.escapeLiteral).join(', ')})`
       yield q
       // console.log(q)
