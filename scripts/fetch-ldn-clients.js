@@ -3,7 +3,7 @@ import { dirname, resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { setTimeout } from 'node:timers/promises'
 
-const DATACAPS_URL = 'https://api.datacapstats.io/public/api'
+const DATACAPS_URL = 'https://api.datacapstats.io/public/api/'
 const API_KEY = process.env.API_KEY ?? await getApiKey()
 
 const allLdnClients = []
@@ -34,7 +34,7 @@ console.log('The list was written to %s', relative(process.cwd(), outfile))
 
 /** @returns {Promise<string>} */
 async function getApiKey () {
-  const res = await fetch(`${DATACAPS_URL}/getApiKey`)
+  const res = await fetch(`${DATACAPS_URL}getApiKey`)
   if (!res.ok) {
     throw new Error(`Cannot obtain DataCapStats API key: ${res.status}\n${await res.text()}`)
   }
