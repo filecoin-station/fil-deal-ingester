@@ -119,7 +119,7 @@ function * processDeal (deal) {
   // Skip deals that don't have payload CID metadata
   // TODO: handle other CID formats
   assert.strictEqual(typeof Label, 'string', `Label is not a string: ${JSON.stringify(deal.Proposal)}`)
-  if (!Label || !Label.match(/^(bafy|Qm)/)) return
+  if (!Label || !Label.match(/^(bafy|bafk|Qm)/)) return
 
   assert.strictEqual(typeof Provider, 'string', `Provider is not a string: ${JSON.stringify(deal.Proposal)}`)
   assert.strictEqual(typeof PieceCID['/'], 'string', `PieceCID is not a CID link: ${JSON.stringify(deal.Proposal)}`)
