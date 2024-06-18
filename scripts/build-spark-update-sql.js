@@ -7,7 +7,7 @@ import split2 from 'split2'
 import pg from 'pg'
 
 const thisDir = dirname(fileURLToPath(import.meta.url))
-const infile = resolve(thisDir, '../generated/ldn-deals.ndjson')
+const infile = resolve(thisDir, '../generated/retrievable-deals.ndjson')
 const outfile = resolve(thisDir, '../generated/update-spark-db.sql')
 
 const started = Date.now()

@@ -2,6 +2,16 @@
 
 A set of tools to manually ingest Filecoin storage deals and produce a list of retrieval tasks
 
+## How to add a new allocator
+
+To enlist a new allocator (verifier) that requires stored data to be publicly retrievable, update
+the list of verifiers in [scripts/fetch-open-data-clients.js](./scripts/fetch-open-data-clients.js).
+
+You can find the `f0` ID in a blockchain explorer like https://filfox.info or https://beryx.io. Use
+the multisig address provided in the allocator application, e.g. in
+https://github.com/filecoin-project/notary-governance/issues.
+
+
 ## Basic use
 
 Make sure you have the latest Node.js LTS version installed.
@@ -12,13 +22,13 @@ Remember to install dependencies after cloning this repository locally.
 ❯ npm install
 ```
 
-### Update the list of clients participating in FIL+ LDN
+### Update the list of clients with datacap from allocators requiring retrievability
 
 ```
-node scripts/fetch-ldn-clients.js
+node scripts/fetch-open-data-clients.js
 ```
 
-The output is committed to git; see [./generated/ldn-clients.csv](./generated/ldn-clients.csv)
+The output is committed to git; see [./generated/open-data-clients.csv](./generated/open-data-clients.csv)
 
 ### Download StateMarketDetails.json and convert it to ND-JSON format
 
@@ -45,7 +55,7 @@ The output is NOT committed to git; you can find it in `./generated/StateMarketD
 You can create a smaller file by aborting the `jq` command by pressing Ctrl+C and/or truncating the
 output file at any line boundary.
 
-### Parse FIL+ LDN deals
+### Parse deals expected to be publicly retrievable
 
 1. Run the previous step to build `./generated/StateMarketDeals.ndjsonn`
 
@@ -53,16 +63,16 @@ output file at any line boundary.
 2. Run
 
    ```sh
-   node scripts/parse-ldn-deals.js
+   node scripts/parse-retrievable-deals.js
    ```
 
    This will take several minutes to complete.
 
-The output is NOT committed to git; you can find it in `./generated/ldn-deals.ndjson`
+The output is NOT committed to git; you can find it in `./generated/retrievable-deals.ndjson`
 
 ### Build SQL query to update SPARK DB
 
-1. Run the previous step to build `./generated/ldn-deals.ndjson`
+1. Run the previous step to build `./generated/retrievable-deals.ndjson`
 
 2. Run
 
