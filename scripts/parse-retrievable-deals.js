@@ -16,7 +16,7 @@ const stats = {
 }
 
 const infile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/StateMarketDeals.ndjson')
-const outfile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/ldn-deals.ndjson')
+const outfile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/retrievable-deals.ndjson')
 const started = Date.now()
 
 const abortController = new AbortController()
@@ -33,7 +33,8 @@ process.on('beforeExit', () => {
   console.log('LDN deals were written to %s', relative(process.cwd(), outfile))
 })
 
-const ldnClients = await loadLdnClients()
+const publicDataClients = await loadOpenDataClients()
+console.log('Parsing deals from %s clients', publicDataClients.size)
 
 try {
   await pipeline(
@@ -114,7 +115,7 @@ function * processDeal (deal) {
 
   // Skip deals that are not part of FIL+ LDN
   assert.strictEqual(typeof Client, 'string', `Client is not a string: ${JSON.stringify(deal.Proposal)}`)
-  if (!ldnClients.has(Client)) return
+  if (!publicDataClients.has(Client)) return
 
   // Skip deals that don't have payload CID metadata
   // TODO: handle other CID formats
@@ -132,9 +133,9 @@ function * processDeal (deal) {
   yield entry
 }
 
-async function loadLdnClients () {
+async function loadOpenDataClients () {
   const data = await readFile(
-    resolve(dirname(fileURLToPath(import.meta.url)), '../generated/ldn-clients.csv'),
+    resolve(dirname(fileURLToPath(import.meta.url)), '../generated/open-data-clients.csv'),
     'utf-8'
   )
   const list = data

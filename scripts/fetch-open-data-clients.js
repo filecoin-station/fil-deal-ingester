@@ -2,33 +2,42 @@ import fs from 'node:fs/promises'
 import { dirname, resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { setTimeout } from 'node:timers/promises'
+import LDN_NOTARIES from './ldn-notaries-snapshot.js'
 
 const DATACAPS_URL = 'https://api.datacapstats.io/public/api/'
 const API_KEY = process.env.API_KEY ?? await getApiKey()
 
-const allLdnClients = []
+const PUBLIC_DATA_ALLOCATORS = [
+  'f03015751', // https://github.com/fidlabs/Open-Data-Pathway
+]
 
-const notaries = await findNotaries('ldn')
-console.log('Found %s notaries', notaries.length)
+const allOpenDataClients = []
 
-for (const notaryAddressId of notaries) {
-  const clients = await getVerifiedClientsOfNotary(notaryAddressId)
-  console.log('Notary %s tracks %s clients', notaryAddressId, clients.length)
-  allLdnClients.push(...clients)
+const verifiers = [
+  ...LDN_NOTARIES,
+  ...PUBLIC_DATA_ALLOCATORS,
+]
+
+console.log('Updating data for %s verifiers', verifiers.length)
+
+for (const verifierId of verifiers) {
+  const clients = await getVerifiedClientsOf(verifierId)
+  console.log('Verifier %s assigned datacap to %s clients', verifierId, clients.length)
+  allOpenDataClients.push(...clients)
   // slow down to avoid hitting rate limits
   await setTimeout(100)
 }
 
-allLdnClients.sort()
+allOpenDataClients.sort()
 
 // remove duplicates
 const cleansed = []
-for (let i = 0; i < allLdnClients.length; i++) {
-  if (i === 0 || allLdnClients[i] !== allLdnClients[i - 1]) { cleansed.push(allLdnClients[i]) }
+for (let i = 0; i < allOpenDataClients.length; i++) {
+  if (i === 0 || allOpenDataClients[i] !== allOpenDataClients[i - 1]) { cleansed.push(allOpenDataClients[i]) }
 }
 
 console.log('Found %s FIL+ LDN clients in total', cleansed.length)
-const outfile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/ldn-clients.csv')
+const outfile = resolve(dirname(fileURLToPath(import.meta.url)), '../generated/open-data-clients.csv')
 await fs.writeFile(outfile, cleansed.map(p => `${p}\n`).join(''))
 console.log('The list was written to %s', relative(process.cwd(), outfile))
 
@@ -43,22 +52,7 @@ async function getApiKey () {
 }
 
 /** @returns {Promise<string[]>} */
-async function findNotaries (filter) {
-  const res = await fetch(
-    buildUrlWithQueryString('getVerifiers', { limit: 1000, filter }),
-    { headers: { 'X-API-KEY': API_KEY } }
-  )
-
-  if (!res.ok) {
-    throw new Error(`Cannot query notaries: ${res.status}\n${await res.text()}`)
-  }
-
-  const body = await res.json()
-  return body.data.map(obj => obj.addressId)
-}
-
-/** @returns {Promise<string[]>} */
-async function getVerifiedClientsOfNotary (notaryAddressId) {
+async function getVerifiedClientsOf (notaryAddressId) {
   const res = await fetch(
     buildUrlWithQueryString(`getVerifiedClients/${notaryAddressId}`, { limit: 1000 }),
     { headers: { 'X-API-KEY': API_KEY } }
