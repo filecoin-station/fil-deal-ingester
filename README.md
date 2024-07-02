@@ -2,16 +2,6 @@
 
 A set of tools to manually ingest Filecoin storage deals and produce a list of retrieval tasks
 
-## How to add a new allocator
-
-To enlist a new allocator (verifier) that requires stored data to be publicly retrievable, update
-the list of verifiers in [scripts/fetch-open-data-clients.js](./scripts/fetch-open-data-clients.js).
-
-You can find the `f0` ID in a blockchain explorer like https://filfox.info or https://beryx.io. Use
-the multisig address provided in the allocator application, e.g. in
-https://github.com/filecoin-project/notary-governance/issues.
-
-
 ## Basic use
 
 Make sure you have the latest Node.js LTS version installed.
@@ -22,13 +12,8 @@ Remember to install dependencies after cloning this repository locally.
 ❯ npm install
 ```
 
-### Update the list of clients with datacap from allocators requiring retrievability
-
-```
-node scripts/fetch-open-data-clients.js
-```
-
-The output is committed to git; see [./generated/open-data-clients.csv](./generated/open-data-clients.csv)
+Generated files are stored in the directory `generated`. Make sure to create it before running
+the first script.
 
 ### Download StateMarketDetails.json and convert it to ND-JSON format
 

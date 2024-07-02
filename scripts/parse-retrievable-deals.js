@@ -33,8 +33,7 @@ process.on('beforeExit', () => {
   console.log('LDN deals were written to %s', relative(process.cwd(), outfile))
 })
 
-const publicDataClients = await loadOpenDataClients()
-console.log('Parsing deals from %s clients', publicDataClients.size)
+console.log('Parsing ALL VERIFIED deals')
 
 try {
   await pipeline(
@@ -113,10 +112,6 @@ function * processDeal (deal) {
    const tomorrow = Date.now() + 24 /* hours/day */ * 3600_000
    if (expires < tomorrow) return
 
-  // Skip deals that are not part of FIL+ LDN
-  assert.strictEqual(typeof Client, 'string', `Client is not a string: ${JSON.stringify(deal.Proposal)}`)
-  if (!publicDataClients.has(Client)) return
-
   // Skip deals that don't have payload CID metadata
   // TODO: handle other CID formats
   assert.strictEqual(typeof Label, 'string', `Label is not a string: ${JSON.stringify(deal.Proposal)}`)
@@ -133,17 +128,3 @@ function * processDeal (deal) {
   yield entry
 }
 
-async function loadOpenDataClients () {
-  const data = await readFile(
-    resolve(dirname(fileURLToPath(import.meta.url)), '../generated/open-data-clients.csv'),
-    'utf-8'
-  )
-  const list = data
-    .trim() // remove EOL at EOF
-    .split('\n') // split lines
-  const set = new Set()
-  for (const p of list) {
-    set.add(p)
-  }
-  return set
-}
