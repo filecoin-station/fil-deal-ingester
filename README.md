@@ -28,5 +28,5 @@ Run the following command to fetch the market deals and update SPARK DB:
 DATABASE_URL=postgres://user:password@localhost:5454/spark ./run.sh
 ```
 
-**NOTE: This will download & store several gigabytes of data and can take up to 2-3 hours to complete.**
+**NOTE: This will download & store several gigabytes of data and can take up to 3-5 hours to complete.**
 

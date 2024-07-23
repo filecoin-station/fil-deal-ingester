@@ -25,4 +25,3 @@ echo "** UPDATING THE PRODUCTION DATABASE **"
 psql "$DATABASE_URL" -f generated/update-spark-db.sql
 
 echo "** DONE **"
-say "done"
