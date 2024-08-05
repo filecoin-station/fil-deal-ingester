@@ -121,6 +121,7 @@ function * processDeal (deal) {
   assert.strictEqual(typeof PieceCID['/'], 'string', `PieceCID is not a CID link: ${JSON.stringify(deal.Proposal)}`)
   const entry = {
     provider: Provider,
+    client: Client,
     pieceCID: PieceCID['/'],
     payloadCID: Label,
     expires,
