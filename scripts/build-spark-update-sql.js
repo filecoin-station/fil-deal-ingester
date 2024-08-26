@@ -42,7 +42,7 @@ await pipeline(
       // Skip deals that were created more than 60 days ago. These deals should be already in our DB.
       // IMPORTANT: after changing the logic determining which deals are eligible for testing,
       // disable this condition for the first run to ingest *all* deals again.
-      if (deal.started < Date.now() - 60 * ONE_DAY_IN_MS) return
+      if (deal.started < Date.now() - 60 * ONE_DAY_IN_MS) continue
 
       counter++
 
