@@ -30,4 +30,5 @@ DATABASE_URL=postgres://user:password@localhost:5454/spark ./run.sh
 
 **NOTE: This will download & store several gigabytes of data and can take up to 3-5 hours to complete.**
 
-> If you want to free up disk space, `generated/StateMarketDeals.ndjson` can weigh in at 40GB or more
+> If you want to free up disk space, `generated/StateMarketDeals.ndjson` can weigh in at 40GB or more.
+> Feel free to delete all files in the `generated` folder after the script finished running.
