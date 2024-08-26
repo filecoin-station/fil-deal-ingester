@@ -1,6 +1,5 @@
 import assert from 'node:assert'
 import { createReadStream, createWriteStream } from 'node:fs'
-import { readFile } from 'node:fs/promises'
 import { dirname, resolve, relative } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
@@ -107,9 +106,9 @@ function * processDeal (deal) {
   assert.strictEqual(typeof EndEpoch, 'number', `EndEpoch is not a number: ${JSON.stringify(deal.Proposal)}`)
   const expires = EndEpoch * BLOCK_TIME + GENESIS_TS
 
-   // Skip deals that expire in 24 hours
-   const tomorrow = Date.now() + 24 /* hours/day */ * 3600_000
-   if (expires < tomorrow) return
+  // Skip deals that have expired or expire in less than 24 hours
+  const tomorrow = Date.now() + 24 /* hours/day */ * 3600_000
+  if (expires < tomorrow) return
 
   // Skip deals that don't have payload CID metadata
   // TODO: handle other CID formats
@@ -124,8 +123,7 @@ function * processDeal (deal) {
     pieceCID: PieceCID['/'],
     payloadCID: Label,
     started,
-    expires,
+    expires
   }
   yield entry
 }
-

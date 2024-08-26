@@ -47,7 +47,7 @@ await pipeline(
       counter++
 
       if (counter % 5000 === 1) {
-        if (counter > 1) yield END_OF_INSERT_STATEMENT;
+        if (counter > 1) yield END_OF_INSERT_STATEMENT
         yield 'INSERT INTO retrievable_deals (cid, miner_id, client_id, expires_at) VALUES\n'
       } else {
         yield ',\n'
