@@ -99,10 +99,9 @@ function * processDeal (deal) {
   // FIXME: investigate why some deals don't have any PieceCID
   if (!PieceCID) return
 
-  // Skip deals that were created before June 2023 (this date is somewhat arbitrary :shrug:)
+  // Calculate when the deal started
   assert.strictEqual(typeof StartEpoch, 'number', `StartEpoch is not a number: ${JSON.stringify(deal.Proposal)}`)
   const started = StartEpoch * BLOCK_TIME + GENESIS_TS
-  if (started < new Date('2023-06-01T00:00:00.000Z')) return
 
   // Calculate when the deal expires
   assert.strictEqual(typeof EndEpoch, 'number', `EndEpoch is not a number: ${JSON.stringify(deal.Proposal)}`)
@@ -124,6 +123,7 @@ function * processDeal (deal) {
     client: Client,
     pieceCID: PieceCID['/'],
     payloadCID: Label,
+    started,
     expires,
   }
   yield entry
