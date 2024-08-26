@@ -1,6 +1,5 @@
 import 'dotenv/config'
 
-import assert from 'node:assert'
 import fs from 'node:fs/promises'
 import { setTimeout } from 'node:timers/promises'
 import pg from 'pg'
@@ -48,7 +47,7 @@ for (const { client_id: clientId } of clientsMissingAllocator) {
   console.log('Fetching allowance info for the client %s', clientId)
 
   const res = await fetch(
-    buildUrlWithQueryString(`getVerifiedClients`, { filter: clientId, limit: 1000 }),
+    buildUrlWithQueryString('getVerifiedClients', { filter: clientId, limit: 1000 }),
     { headers: { 'X-API-KEY': DATACAPS_TOKEN } }
   )
   if (!res.ok) {

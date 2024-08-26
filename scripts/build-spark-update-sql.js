@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url'
 import split2 from 'split2'
 import pg from 'pg'
 
+const ONE_DAY_IN_MS = 24 * 60 * 60_000
+
 const thisDir = dirname(fileURLToPath(import.meta.url))
 const infile = resolve(thisDir, '../generated/retrievable-deals.ndjson')
 const outfile = resolve(thisDir, '../generated/update-spark-db.sql')
@@ -28,22 +30,31 @@ await pipeline(
     yield 'DELETE FROM retrievable_deals WHERE expires_at < now();\n'
 
     let counter = 0
-    for await (const task of source) {
-      assert(task.payloadCID)
-      assert(task.expires)
-
-      counter++
+    for await (const deal of source) {
       signal.throwIfAborted()
 
+      assert(deal.payloadCID)
+      assert(deal.provider)
+      assert(deal.client)
+      assert(deal.started)
+      assert(deal.expires)
+
+      // Skip deals that were created more than 60 days ago. These deals should be already in our DB.
+      // IMPORTANT: after changing the logic determining which deals are eligible for testing,
+      // disable this condition for the first run to ingest *all* deals again.
+      if (deal.started < Date.now() - 60 * ONE_DAY_IN_MS) continue
+
+      counter++
+
       if (counter % 5000 === 1) {
-        if (counter > 1) yield END_OF_INSERT_STATEMENT;
+        if (counter > 1) yield END_OF_INSERT_STATEMENT
         yield 'INSERT INTO retrievable_deals (cid, miner_id, client_id, expires_at) VALUES\n'
       } else {
         yield ',\n'
       }
 
       const q = `(${[
-        task.payloadCID, task.provider, task.client, new Date(task.expires).toISOString()
+        deal.payloadCID, deal.provider, deal.client, new Date(deal.expires).toISOString()
       ].map(pg.escapeLiteral).join(', ')})`
       yield q
       // console.log(q)

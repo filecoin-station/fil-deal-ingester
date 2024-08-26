@@ -1,6 +1,5 @@
 import assert from 'node:assert'
 import { createReadStream, createWriteStream } from 'node:fs'
-import { readFile } from 'node:fs/promises'
 import { dirname, resolve, relative } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
@@ -99,18 +98,17 @@ function * processDeal (deal) {
   // FIXME: investigate why some deals don't have any PieceCID
   if (!PieceCID) return
 
-  // Skip deals that were created before June 2023 (this date is somewhat arbitrary :shrug:)
+  // Calculate when the deal started
   assert.strictEqual(typeof StartEpoch, 'number', `StartEpoch is not a number: ${JSON.stringify(deal.Proposal)}`)
   const started = StartEpoch * BLOCK_TIME + GENESIS_TS
-  if (started < new Date('2023-06-01T00:00:00.000Z')) return
 
   // Calculate when the deal expires
   assert.strictEqual(typeof EndEpoch, 'number', `EndEpoch is not a number: ${JSON.stringify(deal.Proposal)}`)
   const expires = EndEpoch * BLOCK_TIME + GENESIS_TS
 
-   // Skip deals that expire in 24 hours
-   const tomorrow = Date.now() + 24 /* hours/day */ * 3600_000
-   if (expires < tomorrow) return
+  // Skip deals that have expired or expire in less than 24 hours
+  const tomorrow = Date.now() + 24 /* hours/day */ * 3600_000
+  if (expires < tomorrow) return
 
   // Skip deals that don't have payload CID metadata
   // TODO: handle other CID formats
@@ -124,8 +122,8 @@ function * processDeal (deal) {
     client: Client,
     pieceCID: PieceCID['/'],
     payloadCID: Label,
-    expires,
+    started,
+    expires
   }
   yield entry
 }
-
