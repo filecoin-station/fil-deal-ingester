@@ -31,3 +31,5 @@ echo "** DONE **"
 grep "^DELETE" < generated/dbupdate.log | awk '{s+=$2} END {print "Deleted: " s}'
 grep "^INSERT" < generated/dbupdate.log | awk '{s+=$3} END {print "Added: " s}'
 tail -1 generated/allocator-update.log
+
+rm -rf generated
