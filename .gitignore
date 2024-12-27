@@ -139,3 +139,6 @@ generated/update-spark-db.sql
 # Added by cargo
 
 /target
+
+# Added manually
+generated

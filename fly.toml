@@ -1,0 +1,20 @@
+# fly.toml app configuration file generated for fil-deal-ingester on 2024-12-26T12:45:32+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "fil-deal-ingester"
+primary_region = "cdg"
+
+[env]
+  ENVIRONMENT = "docker"
+  JSON_CONVERTER_BIN = "/usr/src/app/fil-deal-ingester"
+
+[[mounts]]
+  source = "fil_deal_ingester_data"
+  destination = "/usr/src/app/generated"
+  initial_size = "80gb"
+
+[[metrics]]
+
+[[services.checks]]
