@@ -3,6 +3,7 @@
 set -e
 
 DATABASE_URL="${DATABASE_URL?Missing required env var: DATABASE_URL}"
+# defaults to ./target/release/fil-deal-ingester to support local ingestion and backwards compatibility
 JSON_CONVERTER_BIN="${JSON_CONVERTER_BIN:-./target/release/fil-deal-ingester}"
 
 mkdir -p generated
