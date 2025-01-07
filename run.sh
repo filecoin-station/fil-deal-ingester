@@ -34,7 +34,7 @@ echo "** Updating client-allocator mappings **"
 node scripts/update-allocator-clients.js | tee generated/allocator-update.log
 
 MESSAGE=$(
-echo "** FINISHED INGESTION OF f05 DEALS**"
+echo "**FINISHED INGESTION OF f05 DEALS**"
 grep "^DELETE" < generated/dbupdate.log | awk '{s+=$2} END {print "Deleted: " s}'
 grep "^INSERT" < generated/dbupdate.log | awk '{s+=$3} END {print "Added: " s}'
 tail -1 generated/allocator-update.log
