@@ -34,11 +34,11 @@ DATABASE_URL=postgres://user:password@localhost:5454/spark ./run.sh
 > Feel free to delete all files in the `generated` folder after the script finished running.
 
 
-## Deploying to fly.io
+## Deployment to fly.io
 
 **NOTE: Make sure you have the fly.io CLI installed and logged in.**
 
-Creating scheduled machine has to be done by hand as it's not possible to set up a schedule inside the `fly.toml` file. In order to setup scheduled machine we will first have to setup app, volumes and secrets.
+This deployment has to be done only once. Creating scheduled machine has to be done by hand as it's not possible to set up a schedule inside the `fly.toml` file. In order to setup scheduled machine we will first have to setup app, volumes and secrets.
 
 ```sh
 fly apps create --name=fil-deal-ingester --org=<org-name>
@@ -58,4 +58,18 @@ fly machine run . \
 --env JSON_CONVERTER_BIN=/usr/src/app/fil-deal-ingester \
 --env ENVIRONMENT=docker \
 --vm-size=shared-cpu-1x
+```
+
+### Updating existing machine
+
+If you want to update the existing machine with new build, you'd have to get machine id first by running:
+
+```sh
+fly machine ls --app fil-deal-ingester
+```
+
+And then update the machine with the following command:
+
+```sh
+fly machine update <machine-id>  --dockerfile Dockerfile
 ```
