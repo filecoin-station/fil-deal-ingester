@@ -91,7 +91,7 @@ try {
  }} deal
 */
 function * processDeal (deal) {
-  const { VerifiedDeal, StartEpoch, EndEpoch, Client, Label, Provider, PieceCID } = deal.Proposal
+  const { VerifiedDeal, StartEpoch, EndEpoch, Client, Label, Provider, PieceCID, PieceSize } = deal.Proposal
   assert.strictEqual(typeof VerifiedDeal, 'boolean', `VerifiedDeal is not a boolean: ${JSON.stringify(deal.Proposal)}`)
   if (!VerifiedDeal) return
 
@@ -121,6 +121,7 @@ function * processDeal (deal) {
     provider: Provider,
     client: Client,
     pieceCID: PieceCID['/'],
+    pieceSize: PieceSize,
     payloadCID: Label,
     started,
     expires
