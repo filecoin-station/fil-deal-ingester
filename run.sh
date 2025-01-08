@@ -40,9 +40,9 @@ grep "^INSERT" < generated/dbupdate.log | awk '{s+=$3} END {print "Added: " s}'
 tail -1 generated/allocator-update.log
 )
 
+echo $MESSAGE
+
 if [ -n "$SLACK_WEBHOOK_URL" ]; then
   echo "** Sending message to slack **"
   curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$MESSAGE\"}" $SLACK_WEBHOOK_URL
-else 
-  echo $MESSAGE
 fi

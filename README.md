@@ -36,16 +36,19 @@ DATABASE_URL=postgres://user:password@localhost:5454/spark ./run.sh
 
 ## Deployment to fly.io
 
-**NOTE: Make sure you have the fly.io CLI installed and logged in.**
+**NOTE: Make sure you have the fly.io CLI installed and are logged in.**
 
-This deployment has to be done only once. Creating scheduled machine has to be done by hand as it's not possible to set up a schedule inside the `fly.toml` file. In order to setup scheduled machine we will first have to setup app, volumes and secrets.
+### One-time setup
+
+_Creating scheduled machine has to be done by hand as it's not possible to set up a schedule inside the fly.toml file._
+
+Set up an app, volume and secrets:
 
 ```sh
 fly apps create --name=fil-deal-ingester --org=<org-name>
 fly volumes create fil_deal_ingester_data --size=80 --app=fil-deal-ingester --region=<region> --snapshot-retention=1
 fly secrets set DATABASE_URL=<postgres-connection-string> --app=fil-deal-ingester
 fly secrets set SLACK_WEBHOOK_URL=<slack-webhook-url> --app=fil-deal-ingester
-```
 
 Finally, create the machine with the following command:
 
