@@ -60,7 +60,6 @@ await pipeline(
         deal.provider, deal.client, deal.pieceCID, deal.pieceSize, deal.payloadCID, new Date(deal.expires).toISOString()
       ].map(escape).join(', ')})`
       yield q
-      // console.log(q)
     }
     yield END_OF_INSERT_STATEMENT
   },
