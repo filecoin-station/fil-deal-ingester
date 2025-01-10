@@ -26,13 +26,15 @@ await pipeline(
     // FIXME: on conflict update expires_at to MAX(old.expires_at, new.expires_at)
     const END_OF_INSERT_STATEMENT = '\nON CONFLICT DO NOTHING;\n'
 
-    // yield 'TRUNCATE TABLE retrievable_deals;\n'
-    yield 'DELETE FROM retrievable_deals WHERE expires_at < now();\n'
+    // yield 'TRUNCATE TABLE eligible_deals;\n'
+    yield 'DELETE FROM eligible_deals WHERE expires_at < now();\n'
 
     let counter = 0
     for await (const deal of source) {
       signal.throwIfAborted()
 
+      assert(deal.pieceCID)
+      assert(deal.pieceSize)
       assert(deal.payloadCID)
       assert(deal.provider)
       assert(deal.client)
@@ -48,16 +50,16 @@ await pipeline(
 
       if (counter % 5000 === 1) {
         if (counter > 1) yield END_OF_INSERT_STATEMENT
-        yield 'INSERT INTO retrievable_deals (cid, miner_id, client_id, expires_at) VALUES\n'
+        yield 'INSERT INTO eligible_deals (miner_id, client_id, piece_cid, piece_size, payload_cid, expires_at) VALUES\n'
       } else {
         yield ',\n'
       }
 
+      const escape = (val) => typeof val === 'number' ? val : pg.escapeLiteral(val)
       const q = `(${[
-        deal.payloadCID, deal.provider, deal.client, new Date(deal.expires).toISOString()
-      ].map(pg.escapeLiteral).join(', ')})`
+        deal.provider, deal.client, deal.pieceCID, deal.pieceSize, deal.payloadCID, new Date(deal.expires).toISOString()
+      ].map(escape).join(', ')})`
       yield q
-      // console.log(q)
     }
     yield END_OF_INSERT_STATEMENT
   },

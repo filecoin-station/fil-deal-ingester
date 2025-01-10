@@ -24,14 +24,14 @@ if (!DATACAPS_TOKEN) {
 const pgClient = new pg.Client(DATABASE_URL)
 await pgClient.connect()
 
-// The "WITH" query is a more performing variant of `SELECT DISTINCT(client) FROM retrievable_deals`
+// The "WITH" query is a more performing variant of `SELECT DISTINCT(client) FROM eligible_deals`
 // See https://wiki.postgresql.org/wiki/Loose_indexscan
 const { rows: clientsMissingAllocator } = await pgClient.query(`
   WITH all_clients AS (
     WITH RECURSIVE t AS (
-      (SELECT client_id FROM retrievable_deals ORDER BY client_id LIMIT 1)
+      (SELECT client_id FROM eligible_deals ORDER BY client_id LIMIT 1)
       UNION ALL
-      SELECT (SELECT client_id FROM retrievable_deals WHERE client_id > t.client_id ORDER BY client_id LIMIT 1)
+      SELECT (SELECT client_id FROM eligible_deals WHERE client_id > t.client_id ORDER BY client_id LIMIT 1)
       FROM t
       WHERE t.client_id IS NOT NULL
     )
