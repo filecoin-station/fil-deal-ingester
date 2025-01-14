@@ -14,6 +14,7 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      - run: npm run test:lint
       - run: cargo build --verbose
       - run: cargo test --verbose
 
@@ -46,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl machine update ${{ secrets.FLY_MACHINE_ID }} --dockerfile Dockerfile
+      - run: flyctl machine update ${{ secrets.FLY_MACHINE_ID }} --dockerfile Dockerfile --app ${{ env.FLY_APP }}
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       # - if: failure()
