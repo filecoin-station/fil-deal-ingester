@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: [main]
+    branches: [main, feat/setup-ci-cd]
   pull_request:
     branches: [main]
 
@@ -28,22 +28,22 @@ jobs:
       - run: flyctl machine update ${{ secrets.FLY_MACHINE_ID }} --dockerfile Dockerfile --app ${{ vars.FLY_APP }} -y
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-      - if: failure()
-        uses: slackapi/slack-github-action@v2.0.0
-        with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          payload: |
-            {
-              "channel": "alerts",
-              "text": "Deployment of `${{ github.event.repository.name }}` failed",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":warning: *<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Deployment of `${{ github.event.repository.name }}` failed>*"
-                  }
-                }
-              ]
-            } 
+      # - if: failure()
+      #   uses: slackapi/slack-github-action@v2.0.0
+      #   with:
+      #     method: chat.postMessage
+      #     token: ${{ secrets.SLACK_BOT_TOKEN }}
+      #     payload: |
+      #       {
+      #         "channel": "alerts",
+      #         "text": "Deployment of `${{ github.event.repository.name }}` failed",
+      #         "blocks": [
+      #           {
+      #             "type": "section",
+      #             "text": {
+      #               "type": "mrkdwn",
+      #               "text": ":warning: *<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Deployment of `${{ github.event.repository.name }}` failed>*"
+      #             }
+      #           }
+      #         ]
+      #       } 
