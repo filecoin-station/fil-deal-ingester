@@ -40,7 +40,7 @@ jobs:
           cache-to: type=inline
 
   deploy:
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
     needs: [build, docker-build]
     runs-on: ubuntu-latest
     steps:
