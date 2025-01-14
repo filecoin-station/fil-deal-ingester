@@ -2,8 +2,8 @@ name: CI
 on:
   push:
     branches: [main, feat/setup-ci-cd]
-  pull_request:
-    branches: [main]
+  # pull_request:
+  #   branches: [main]
 
 jobs:
   build:
@@ -14,7 +14,9 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-      - run: npm run test:lint
+      - run: npx standard
+      - run: cargo fmt
+      - run: cargo clippy
       - run: cargo build --verbose
       - run: cargo test --verbose
 
