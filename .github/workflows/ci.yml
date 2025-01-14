@@ -6,7 +6,7 @@ on:
   #   branches: [main]
 
 jobs:
-  build:
+  lint-scripts:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,14 +15,31 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npx standard
-      - run: cargo fmt
-      - run: cargo clippy
-      - run: cargo build --verbose
-      - run: cargo test --verbose
+
+  build-ingester:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install rust
+        run: rustup default stable
+      - name: Install rustfmt Components
+        run: rustup component add rustfmt
+      - name: Install clippy
+        run: rustup component add clippy
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo test --verbose
+      - name: Build examples
+        run: cargo build --verbose
+      - name: Check Rustfmt Code Style
+        run: cargo fmt --all -- --check
+      - name: Check clippy warnings
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
   deploy:
     # if: github.ref == 'refs/heads/main'
-    needs: [build]
+    needs: [lint-scripts, build-ingester]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
