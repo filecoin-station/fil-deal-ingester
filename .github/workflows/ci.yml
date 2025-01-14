@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl machine update ${{ secrets.FLY_MACHINE_ID }} --dockerfile Dockerfile --app ${{ env.FLY_APP }}
+      - run: flyctl machine update ${{ secrets.FLY_MACHINE_ID }} --dockerfile Dockerfile --app ${{ var.FLY_APP }}
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       # - if: failure()
