@@ -3,9 +3,6 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "scripts": {
-    "test:lint": "standard"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/filecoin-station/fil-deal-ingester.git"
@@ -21,8 +18,5 @@
     "pg": "^8.12.0",
     "split2": "^4.2.0",
     "varint": "^6.0.0"
-  },
-  "devDependencies": {
-    "standard": "^17.1.2"
   }
 }
