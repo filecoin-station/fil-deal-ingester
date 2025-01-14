@@ -1,9 +1,9 @@
 name: CI
 on:
   push:
-    branches: [main, feat/setup-ci-cd]
-  # pull_request:
-  #   branches: [main]
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   lint-scripts:
@@ -30,15 +30,13 @@ jobs:
         run: cargo build --verbose
       - name: Run tests
         run: cargo test --verbose
-      - name: Build examples
-        run: cargo build --verbose
       - name: Check Rustfmt Code Style
         run: cargo fmt --all -- --check
       - name: Check clippy warnings
         run: cargo clippy --all-targets --all-features -- -D warnings
 
   deploy:
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     needs: [lint-scripts, build-ingester]
     runs-on: ubuntu-latest
     steps:
@@ -47,22 +45,22 @@ jobs:
       - run: flyctl machine update ${{ secrets.FLY_MACHINE_ID }} --dockerfile Dockerfile --app ${{ vars.FLY_APP }} -y
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-      # - if: failure()
-      #   uses: slackapi/slack-github-action@v2.0.0
-      #   with:
-      #     method: chat.postMessage
-      #     token: ${{ secrets.SLACK_BOT_TOKEN }}
-      #     payload: |
-      #       {
-      #         "channel": "alerts",
-      #         "text": "Deployment of `${{ github.event.repository.name }}` failed",
-      #         "blocks": [
-      #           {
-      #             "type": "section",
-      #             "text": {
-      #               "type": "mrkdwn",
-      #               "text": ":warning: *<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Deployment of `${{ github.event.repository.name }}` failed>*"
-      #             }
-      #           }
-      #         ]
-      #       } 
+      - if: failure()
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            {
+              "channel": "alerts",
+              "text": "Deployment of `${{ github.event.repository.name }}` failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":warning: *<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Deployment of `${{ github.event.repository.name }}` failed>*"
+                  }
+                }
+              ]
+            } 
