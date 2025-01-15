@@ -25,7 +25,7 @@ fn main() -> Result<()> {
 
     ensure!(
         reader.read_event(&mut buffer).expect("cannot parse JSON") == JsonEvent::StartObject,
-        "blah"
+        "read event not equal to JsonEvent::StartObject"
     );
 
     loop {
