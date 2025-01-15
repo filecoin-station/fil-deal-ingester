@@ -6,6 +6,7 @@ use std::io::{BufRead, BufReader, Write};
 fn main() {
     env_logger::init();
 
+    #[allow(clippy::iter_skip_next)]
     let infile = match env::args().skip(1).next() {
         Some(f) => f,
         None => panic!("Missing required argument: path to StorageMarketDeals.json.zst"),
