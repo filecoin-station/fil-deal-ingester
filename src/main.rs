@@ -24,7 +24,7 @@ fn main() -> Result<()> {
     let mut buffer = Vec::new();
 
     ensure!(
-        reader.read_event(&mut buffer).expect("cannot parse JSON") == JsonEvent::StartObject,
+        reader.read_event(&mut buffer)? == JsonEvent::StartObject,
         "read event not equal to JsonEvent::StartObject"
     );
 
@@ -33,18 +33,16 @@ fn main() -> Result<()> {
         log::debug!("{:?}", event);
 
         match event {
-            JsonEvent::ObjectKey(_) => parse_deal(&mut reader, &mut buffer),
-            JsonEvent::EndObject => {
-                let event = reader.read_event(&mut buffer)?;
-                if event == JsonEvent::Eof {
-                    break;
-                } else {
+            JsonEvent::ObjectKey(_) => parse_deal(&mut reader, &mut buffer)?,
+            JsonEvent::EndObject => match reader.read_event(&mut buffer)? {
+                JsonEvent::Eof => break,
+                event => {
                     return Err(anyhow!(
                         "unexpected JSON event after EndObject: {:?}",
                         event
-                    ));
+                    ))
                 }
-            }
+            },
             _ => return Err(anyhow!("unexpected JSON event: {:?}", event)),
         };
     }
@@ -52,20 +50,20 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn parse_deal<R: BufRead>(reader: &mut JsonReader<R>, buffer: &mut Vec<u8>) {
+fn parse_deal<R: BufRead>(reader: &mut JsonReader<R>, buffer: &mut Vec<u8>) -> Result<()> {
     let mut output = Vec::new();
     let mut writer = JsonWriter::from_writer(&mut output);
 
     let mut depth = 0;
 
     loop {
-        let event = reader.read_event(buffer).expect("cannot parse JSON");
+        let event = reader.read_event(buffer).context("cannot parse JSON")?;
         if depth == 0 {
-            assert_eq!(event, JsonEvent::StartObject,);
+            ensure!(event == JsonEvent::StartObject, "");
             log::debug!("==DEAL START==");
         }
 
-        writer.write_event(event).expect("cannot write JSON");
+        writer.write_event(event).context("cannot write JSON")?;
 
         match event {
             JsonEvent::StartObject => {
@@ -87,5 +85,5 @@ fn parse_deal<R: BufRead>(reader: &mut JsonReader<R>, buffer: &mut Vec<u8>) {
     output.push(b'\n');
     let _ = std::io::stdout().write(&output);
     let _ = std::io::stdout().flush();
-    // println!("{}", std::str::from_utf8(&output).expect("malformed UTF-8"));
+    Ok(())
 }
