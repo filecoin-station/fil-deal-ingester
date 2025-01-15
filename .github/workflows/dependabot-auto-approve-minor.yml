@@ -19,6 +19,7 @@ jobs:
           - log
           - zstd
           - anyhow
+          # FIXME: json-event-parser
     steps:
       - name: Dependabot metadata
         id: metadata
