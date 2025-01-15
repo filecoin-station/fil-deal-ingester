@@ -1,4 +1,4 @@
-use anyhow::{anyhow, ensure, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use json_event_parser::{JsonEvent, JsonReader, JsonWriter};
 use std::env;
 use std::fs::File;
@@ -37,14 +37,11 @@ fn main() -> Result<()> {
             JsonEvent::EndObject => match reader.read_event(&mut buffer)? {
                 JsonEvent::Eof => break,
                 event => {
-                    return Err(anyhow!(
-                        "unexpected JSON event after EndObject: {:?}",
-                        event
-                    ))
+                    bail!("unexpected JSON event after EndObject: {:?}", event);
                 }
             },
-            _ => return Err(anyhow!("unexpected JSON event: {:?}", event)),
-        };
+            _ => bail!("unexpected JSON event: {:?}", event),
+        }
     }
 
     Ok(())
