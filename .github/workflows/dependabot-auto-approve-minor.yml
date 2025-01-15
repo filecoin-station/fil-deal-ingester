@@ -16,7 +16,6 @@ jobs:
           - split2
           - varint
           - env_logger
-          - json-event-parser
           - log
           - zstd
           - anyhow

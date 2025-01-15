@@ -1,5 +1,5 @@
 use anyhow::{bail, ensure, Context, Result};
-use json_event_parser::{FromReadJsonReader, JsonEvent, ToWriteJsonWriter};
+use json_event_parser::{JsonEvent, JsonReader, JsonWriter};
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
@@ -19,19 +19,23 @@ fn main() -> Result<()> {
     let f = File::open(&infile).context("cannot open input file")?;
     let decoder =
         zstd::stream::Decoder::new(BufReader::new(f)).context("cannot create zstd decoder")?;
-    let mut reader = FromReadJsonReader::new(BufReader::new(decoder));
+    let mut reader = JsonReader::from_reader(BufReader::new(decoder));
 
-    let start_event = reader.read_next_event().context("cannot parse JSON")?;
+    let mut buffer = Vec::new();
+
+    let start_event = reader
+        .read_event(&mut buffer)
+        .context("cannot parse JSON")?;
 
     ensure!(start_event == JsonEvent::StartObject);
 
     loop {
-        let event = reader.read_next_event()?;
+        let event = reader.read_event(&mut buffer)?;
         log::debug!("{:?}", event);
 
         match event {
-            JsonEvent::ObjectKey(_) => parse_deal(&mut reader)?,
-            JsonEvent::EndObject => match reader.read_next_event()? {
+            JsonEvent::ObjectKey(_) => parse_deal(&mut reader, &mut buffer)?,
+            JsonEvent::EndObject => match reader.read_event(&mut buffer)? {
                 JsonEvent::Eof => break,
                 event => {
                     bail!("unexpected JSON event after EndObject: {:?}", event);
@@ -44,20 +48,20 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn parse_deal<R: BufRead>(reader: &mut FromReadJsonReader<R>) -> Result<()> {
+fn parse_deal<R: BufRead>(reader: &mut JsonReader<R>, buffer: &mut Vec<u8>) -> Result<()> {
     let mut output = Vec::new();
-    let mut writer = ToWriteJsonWriter::new(&mut output);
+    let mut writer = JsonWriter::from_writer(&mut output);
 
     let mut depth = 0;
 
     loop {
-        let event = reader.read_next_event().context("cannot parse JSON")?;
+        let event = reader.read_event(buffer).context("cannot parse JSON")?;
         if depth == 0 {
             ensure!(event == JsonEvent::StartObject);
             log::debug!("==DEAL START==");
         }
 
-        writer.write_event(event.clone()).context("cannot write JSON")?;
+        writer.write_event(event).context("cannot write JSON")?;
 
         match event {
             JsonEvent::StartObject => {
