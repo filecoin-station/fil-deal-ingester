@@ -23,10 +23,11 @@ fn main() -> Result<()> {
 
     let mut buffer = Vec::new();
 
-    ensure!(
-        reader.read_event(&mut buffer)? == JsonEvent::StartObject,
-        "read event not equal to JsonEvent::StartObject"
-    );
+    let start_event = reader
+        .read_event(&mut buffer)
+        .context("cannot parse JSON")?;
+
+    ensure!(start_event == JsonEvent::StartObject);
 
     loop {
         let event = reader.read_event(&mut buffer)?;
@@ -56,7 +57,7 @@ fn parse_deal<R: BufRead>(reader: &mut JsonReader<R>, buffer: &mut Vec<u8>) -> R
     loop {
         let event = reader.read_event(buffer).context("cannot parse JSON")?;
         if depth == 0 {
-            ensure!(event == JsonEvent::StartObject, "");
+            ensure!(event == JsonEvent::StartObject);
             log::debug!("==DEAL START==");
         }
 
