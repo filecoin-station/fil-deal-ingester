@@ -1,4 +1,4 @@
-use json_event_parser::{JsonEvent, JsonReader, JsonWriter};
+use json_event_parser::{FromReadJsonReader, JsonEvent, ToWriteJsonWriter};
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
@@ -18,23 +18,21 @@ fn main() {
     let f = File::open(infile).expect("cannot open input file");
     let decoder =
         zstd::stream::Decoder::new(BufReader::new(f)).expect("cannot create zstd decoder");
-    let mut reader = JsonReader::from_reader(BufReader::new(decoder));
-
-    let mut buffer = Vec::new();
+    let mut reader = FromReadJsonReader::new(BufReader::new(decoder));
 
     assert_eq!(
-        reader.read_event(&mut buffer).expect("cannot parse JSON"),
+        reader.read_next_event().expect("cannot parse JSON"),
         JsonEvent::StartObject,
     );
 
     loop {
-        let event = reader.read_event(&mut buffer).expect("cannot parse JSON");
+        let event = reader.read_next_event().expect("cannot parse JSON");
         log::debug!("{:?}", event);
 
         match event {
-            JsonEvent::ObjectKey(_) => parse_deal(&mut reader, &mut buffer),
+            JsonEvent::ObjectKey(_) => parse_deal(&mut reader),
             JsonEvent::EndObject => {
-                let event = reader.read_event(&mut buffer).expect("cannot parse JSON");
+                let event = reader.read_next_event().expect("cannot parse JSON");
                 if event == JsonEvent::Eof {
                     break;
                 } else {
@@ -46,20 +44,22 @@ fn main() {
     }
 }
 
-fn parse_deal<R: BufRead>(reader: &mut JsonReader<R>, buffer: &mut Vec<u8>) {
+fn parse_deal<R: BufRead>(reader: &mut FromReadJsonReader<R>) {
     let mut output = Vec::new();
-    let mut writer = JsonWriter::from_writer(&mut output);
+    let mut writer = ToWriteJsonWriter::new(&mut output);
 
     let mut depth = 0;
 
     loop {
-        let event = reader.read_event(buffer).expect("cannot parse JSON");
+        let event = reader.read_next_event().expect("cannot parse JSON");
         if depth == 0 {
             assert_eq!(event, JsonEvent::StartObject,);
             log::debug!("==DEAL START==");
         }
 
-        writer.write_event(event).expect("cannot write JSON");
+        writer
+            .write_event(event.clone())
+            .expect("cannot write JSON");
 
         match event {
             JsonEvent::StartObject => {
