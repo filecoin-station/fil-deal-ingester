@@ -1,5 +1,5 @@
 # build rust binary from src
-FROM rust:1.79-slim AS builder
+FROM rust:1.84-slim AS builder
 
 WORKDIR /usr/src/app
 
@@ -9,7 +9,7 @@ COPY ./Cargo.* .
 RUN cargo build --release
 
 # use node image to run the binary
-FROM node:22-slim AS runtime
+FROM node:23-slim AS runtime
 
 WORKDIR /usr/src/app
 
