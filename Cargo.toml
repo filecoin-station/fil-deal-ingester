@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-env_logger = "0.10.1"
+env_logger = "0.11.2"
 json-event-parser = "0.1.1"
 log = "0.4.20"
 zstd = "0.13.0"
