@@ -1,65 +1,67 @@
+use anyhow::{bail, ensure, Context, Result};
 use json_event_parser::{JsonEvent, JsonReader, JsonWriter};
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 
-fn main() {
+fn main() -> Result<()> {
     env_logger::init();
 
-    let infile = match env::args().skip(1).next() {
-        Some(f) => f,
-        None => panic!("Missing required argument: path to StorageMarketDeals.json.zst"),
-    };
+    let infile = env::args()
+        .nth(1)
+        .context("Missing required argument: path to StorageMarketDeals.json.zst")?;
 
-    assert!(
+    ensure!(
         infile.ends_with(".json.zst"),
         "The StorageMarketDeals file must have .json.zst extension"
     );
-    let f = File::open(infile).expect("cannot open input file");
+
+    let f = File::open(&infile).context("cannot open input file")?;
     let decoder =
-        zstd::stream::Decoder::new(BufReader::new(f)).expect("cannot create zstd decoder");
+        zstd::stream::Decoder::new(BufReader::new(f)).context("cannot create zstd decoder")?;
     let mut reader = JsonReader::from_reader(BufReader::new(decoder));
 
     let mut buffer = Vec::new();
 
-    assert_eq!(
-        reader.read_event(&mut buffer).expect("cannot parse JSON"),
-        JsonEvent::StartObject,
-    );
+    let start_event = reader
+        .read_event(&mut buffer)
+        .context("cannot parse JSON")?;
+
+    ensure!(start_event == JsonEvent::StartObject);
 
     loop {
-        let event = reader.read_event(&mut buffer).expect("cannot parse JSON");
+        let event = reader.read_event(&mut buffer)?;
         log::debug!("{:?}", event);
 
         match event {
-            JsonEvent::ObjectKey(_) => parse_deal(&mut reader, &mut buffer),
-            JsonEvent::EndObject => {
-                let event = reader.read_event(&mut buffer).expect("cannot parse JSON");
-                if event == JsonEvent::Eof {
-                    break;
-                } else {
-                    panic!("unexpected JSON event after EndObject: {event:?}")
+            JsonEvent::ObjectKey(_) => parse_deal(&mut reader, &mut buffer)?,
+            JsonEvent::EndObject => match reader.read_event(&mut buffer)? {
+                JsonEvent::Eof => break,
+                event => {
+                    bail!("unexpected JSON event after EndObject: {:?}", event);
                 }
-            }
-            _ => panic!("unexpected JSON event: {event:?}"),
-        };
+            },
+            _ => bail!("unexpected JSON event: {:?}", event),
+        }
     }
+
+    Ok(())
 }
 
-fn parse_deal<R: BufRead>(reader: &mut JsonReader<R>, buffer: &mut Vec<u8>) {
+fn parse_deal<R: BufRead>(reader: &mut JsonReader<R>, buffer: &mut Vec<u8>) -> Result<()> {
     let mut output = Vec::new();
     let mut writer = JsonWriter::from_writer(&mut output);
 
     let mut depth = 0;
 
     loop {
-        let event = reader.read_event(buffer).expect("cannot parse JSON");
+        let event = reader.read_event(buffer).context("cannot parse JSON")?;
         if depth == 0 {
-            assert_eq!(event, JsonEvent::StartObject,);
+            ensure!(event == JsonEvent::StartObject);
             log::debug!("==DEAL START==");
         }
 
-        writer.write_event(event).expect("cannot write JSON");
+        writer.write_event(event).context("cannot write JSON")?;
 
         match event {
             JsonEvent::StartObject => {
@@ -81,5 +83,5 @@ fn parse_deal<R: BufRead>(reader: &mut JsonReader<R>, buffer: &mut Vec<u8>) {
     output.push(b'\n');
     let _ = std::io::stdout().write(&output);
     let _ = std::io::stdout().flush();
-    // println!("{}", std::str::from_utf8(&output).expect("malformed UTF-8"));
+    Ok(())
 }
