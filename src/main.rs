@@ -59,7 +59,6 @@ fn parse_deal<R: BufRead>(reader: &mut FromReadJsonReader<R>) -> Result<()> {
             log::debug!("==DEAL START==");
         }
 
-
         match event {
             JsonEvent::StartObject => {
                 depth += 1;
