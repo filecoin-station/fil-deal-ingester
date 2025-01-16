@@ -18,6 +18,7 @@ jobs:
           - env_logger
           - log
           - zstd
+          - anyhow
           - json-event-parser
     steps:
       - name: Dependabot metadata
