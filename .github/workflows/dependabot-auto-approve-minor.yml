@@ -19,7 +19,7 @@ jobs:
           - log
           - zstd
           - anyhow
-          # FIXME: json-event-parser
+          - json-event-parser
     steps:
       - name: Dependabot metadata
         id: metadata
@@ -27,7 +27,7 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Approve a PR
-        if: ${{startsWith(steps.metadata.outputs.dependency-names, matrix.dependencyStartsWith) && (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor')}}
+        if: ${{startsWith(steps.metadata.outputs.dependency-names, matrix.dependencyStartsWith) && (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor') && !startsWith(steps.dependabot-metadata.outputs.previous-version, '0.')}}
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
