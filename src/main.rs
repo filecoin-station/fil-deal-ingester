@@ -64,9 +64,7 @@ fn parse_deal<R: BufRead>(reader: &mut FromReadJsonReader<R>) -> Result<()> {
             JsonEvent::EndObject => {
                 depth -= 1;
                 if depth == 0 {
-                    writer
-                        .write_event(event)
-                        .context("cannot write JSON")?;
+                    writer.write_event(event).context("cannot write JSON")?;
                     break;
                 }
             }
