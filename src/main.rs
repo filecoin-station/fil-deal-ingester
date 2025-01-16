@@ -57,10 +57,6 @@ fn parse_deal<R: BufRead>(reader: &mut FromReadJsonReader<R>) {
             log::debug!("==DEAL START==");
         }
 
-        writer
-            .write_event(event.clone())
-            .expect("cannot write JSON");
-
         match event {
             JsonEvent::StartObject => {
                 depth += 1;
@@ -74,6 +70,8 @@ fn parse_deal<R: BufRead>(reader: &mut FromReadJsonReader<R>) {
             _ => {}
         }
         log::debug!("[{depth}] {event:?}");
+
+        writer.write_event(event).expect("cannot write JSON");
     }
 
     log::debug!("==DEAL END==");
