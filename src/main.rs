@@ -1,5 +1,5 @@
-use json_event_parser::{FromReadJsonReader, JsonEvent, ToWriteJsonWriter};
 use anyhow::{bail, ensure, Context, Result};
+use json_event_parser::{FromReadJsonReader, JsonEvent, ToWriteJsonWriter};
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
@@ -21,9 +21,7 @@ fn main() -> Result<()> {
         zstd::stream::Decoder::new(BufReader::new(f)).context("cannot create zstd decoder")?;
     let mut reader = FromReadJsonReader::new(BufReader::new(decoder));
 
-    let start_event = reader
-        .read_next_event()
-        .context("cannot parse JSON")?;
+    let start_event = reader.read_next_event().context("cannot parse JSON")?;
 
     ensure!(start_event == JsonEvent::StartObject);
 
@@ -66,6 +64,9 @@ fn parse_deal<R: BufRead>(reader: &mut FromReadJsonReader<R>) -> Result<()> {
             JsonEvent::EndObject => {
                 depth -= 1;
                 if depth == 0 {
+                    writer
+                        .write_event(event)
+                        .context("cannot write JSON")?;
                     break;
                 }
             }
