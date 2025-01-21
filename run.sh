@@ -36,6 +36,7 @@ node scripts/update-allocator-clients.js | tee generated/allocator-update.log
 # Parse number of deleted and added deals
 DELETED=$(grep "^DELETE" < generated/dbupdate.log | awk '{s+=$2} END {print s}')
 ADDED=$(grep "^INSERT" < generated/dbupdate.log | awk '{s+=$3} END {print s}')
+
 # Parse number of updated allocator clients
 ALLOCATOR_UPDATED_LOG=$(tail -1 generated/allocator-update.log)
 ALLOCATOR_UPDATED=$(echo $ALLOCATOR_UPDATED_LOG | grep -o '[0-9]\+')
@@ -48,7 +49,13 @@ Added: $ADDED
 $ALLOCATOR_UPDATED_LOG
 "
 
-# If influxdb token is defined report
+echo -e $MESSAGE
+
+if [ -n "$SLACK_WEBHOOK_URL" ]; then
+  echo "** Sending message to slack **"
+  curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$MESSAGE\"}" $SLACK_WEBHOOK_URL
+fi
+
 if [ -n "$INFLUXDB_TOKEN" ]; then
   curl --request POST \
   "https://eu-central-1-1.aws.cloud2.influxdata.com/api/v2/write?&bucket=deal-ingestion&precision=ms" \
@@ -56,11 +63,4 @@ if [ -n "$INFLUXDB_TOKEN" ]; then
   --header "Content-Type: text/plain; charset=utf-8" \
   --header "Accept: application/json" \
   --data-binary "deal_ingestion deleted=$DELETED,added=$ADDED,allocator_updated=$ALLOCATOR_UPDATED"
-fi
-
-echo -e $MESSAGE
-
-if [ -n "$SLACK_WEBHOOK_URL" ]; then
-  echo "** Sending message to slack **"
-  curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$MESSAGE\"}" $SLACK_WEBHOOK_URL
 fi
