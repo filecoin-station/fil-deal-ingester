@@ -9,11 +9,6 @@ updates:
     commit-message:
       prefix: "cargo deps"
       prefix-development: "cargo deps(dev)"
-    reviewers:
-      - "bajtos"
-      - "juliangruber"
-      - "pyropy"
-      - "NikolasHaimerl"
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -23,11 +18,6 @@ updates:
     commit-message:
       prefix: "npm deps"
       prefix-development: "npm deps(dev)"
-    reviewers:
-      - "bajtos"
-      - "juliangruber"
-      - "pyropy"
-      - "NikolasHaimerl"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -36,11 +26,6 @@ updates:
       timezone: "Europe/Berlin"
     commit-message:
       prefix: "ci"
-    reviewers:
-      - "bajtos"
-      - "juliangruber"
-      - "pyropy"
-      - "NikolasHaimerl"
   - package-ecosystem: "docker"
     directories:
       - "/"
