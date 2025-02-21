@@ -8,7 +8,7 @@ import split2 from 'split2'
 // See https://docs.filecoin.io/networks/mainnet#genesis
 const GENESIS_TS = new Date('2020-08-24T22:00:00Z').getTime()
 const BLOCK_TIME = 30_000 // 30 seconds
-const ONE_DAY_IN_MILLISECONDS = 24 * 3600 * 1000
+const ONE_DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000
 
 const stats = {
   total: 0n,
